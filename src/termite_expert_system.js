@@ -15,8 +15,10 @@ function Termite() {
     this.expertSystem = new ExpertSystem();
     this.initExpertSystem();
     this.takeARandomDirection();
-    this.hit_wall = false;
     this.cariingWood = false;
+    this.last_hit_type = "";
+    this.lastWoodHeap = null;
+    this.lastPickUpHeap = null;
 }
 
 Termite.prototype.initExpertSystem = function() {
@@ -25,6 +27,9 @@ Termite.prototype.initExpertSystem = function() {
 //	this.expertSystem.addRule("goal", ["premise1", "premise2"]);
     this.expertSystem.addRule("change_direction", ["timer_out"]);
     this.expertSystem.addRule("change_direction", ["hit_wall"]);
+    this.expertSystem.addRule("change_direction", ["hit_heap"]);
+    this.expertSystem.addRule("drop_wood", ["hit_heap", "charged", "different_heap"]);
+    this.expertSystem.addRule("take_wood", ["hit_heap", "uncharged"]);
 };
 
 Termite.prototype.takeARandomDirection = function () {
@@ -48,13 +53,19 @@ Termite.prototype.update = function(dt) {
     this.hit_wall = false;
     this.moveBy(this.destination, this.speed * dt / 1000);
     this.nextChange -= dt;
+    this.last_hit_type = "";
+    this.lastWoodHeap = null;
 };
 
 Termite.prototype.perceive = function() {
 
     this.expertSystem.resetFactValues();
     this.expertSystem.setFactValid("timer_out", (this.nextChange <= 0));
-    this.expertSystem.setFactValid("hit_wall", this.hit_wall);
+    this.expertSystem.setFactValid("hit_wall", this.last_hit_type == "wall");
+    this.expertSystem.setFactValid("hit_heap", this.last_hit_type == "wood_heap");
+    this.expertSystem.setFactValid("charged", this.cariingWood);
+    this.expertSystem.setFactValid("uncharged", !this.cariingWood);
+    this.expertSystem.setFactValid("different_heap", this.lastWoodHeap != this.lastPickUpHeap || this.lastPickUpHeap == null);
 };
 
 Termite.prototype.analyze = function() {
@@ -64,13 +75,16 @@ Termite.prototype.analyze = function() {
 
 Termite.prototype.act = function(conclusions) {
 
-    console.log(conclusions);
-
-    for (var conclusion in conclusions) {
-        if (conclusion == "drop_wood") {
-            this.dropWood();
-        } else if (conclusions == "change_direction") {
+    for (var i = 0, size = conclusions.length; i < size; i++) {
+        if (conclusions[i] == "change_direction") {
             this.takeARandomDirection();
+        } else if (conclusions[i] == "drop_wood") {
+            this.lastWoodHeap.addWood();
+            this.cariingWood = false;
+            this.lastPickUpHeap = this.lastWoodHeap;
+        } else if (conclusions[i] == "take_wood") {
+            this.lastWoodHeap.takeWood();
+            this.cariingWood = true;
         }
     }
 };
@@ -87,8 +101,14 @@ Termite.prototype.draw = function(context) {
 Termite.prototype.processCollision = function(collidedAgent) {
 
     if (collidedAgent == null) {
-        this.hit_wall = true;
+        this.last_hit_type = "wall";
         return;
+    }
+
+    this.last_hit_type = collidedAgent.typeId;
+
+    if (this.last_hit_type == "wood_heap") {
+        this.lastWoodHeap = collidedAgent;
     }
 };
 
