@@ -2,7 +2,6 @@
 <header>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 
-
     <script type="text/javascript" src="./expert_system/fact.js"></script>
     <script type="text/javascript" src="./expert_system/rule.js"></script>
     <script type="text/javascript" src="./expert_system/engine.js"></script>
@@ -11,8 +10,7 @@
     <script type="text/javascript" src="./vector.js"></script>
 	<script type="text/javascript" src="./world.js"></script>
 	<script type="text/javascript" src="./agent.js"></script>
-	<!--<script type="text/javascript" src="./termite.js"></script>-->
-	<!--<script type="text/javascript" src="./termite_pheromone.js"></script>-->
+    <script type="text/javascript" src="./wall.js"></script>
 	<script type="text/javascript" src="./termite_expert_system.js"></script>
 	<script type="text/javascript" src="./pheromone.js"></script>
 	<script type="text/javascript" src="./wood_heap.js"></script>
@@ -63,7 +61,14 @@
                 woodHeap.moveTo(canvasElement.width * Math.random(), canvasElement.height * Math.random());
         }
 
-        for(var i = 0; i < 50; i ++) {
+        for(var i = 0; i < 6; i++) {
+            var wall = new Wall();
+            world.addAgent(wall);
+            wall.moveTo(	canvasElement.width * Math.random(),
+                            canvasElement.height * Math.random());
+        }
+
+        for(i = 0; i < 50; i ++) {
 			var termite = new Termite();
 			world.addAgent(termite);
 			termite.moveTo(	canvasElement.width * Math.random(), 

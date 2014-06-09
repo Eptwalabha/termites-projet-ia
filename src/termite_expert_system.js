@@ -7,7 +7,7 @@ function Termite() {
     this.boundingRadius = 3;
     this.perceptionRadius = 30;
 
-    this.collideTypes = ["wood_heap"];
+    this.collideTypes = ["wood_heap", "wall"];
     this.contactTypes = ["wood_heap", "termite"];
 
     this.nextChange = 0;
@@ -93,7 +93,7 @@ Termite.prototype.draw = function(context) {
     context.fillStyle = this.cariingWood ? "rgba(255, 0, 0, 1)" : "rgba(255, 255, 255, 1)";
     context.strokeStyle="#001";
     context.beginPath();
-    context.arc(this.x, this.y, 2, 0, 2*Math.PI);
+    context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
     context.fill();
     context.stroke();
 };

@@ -6,7 +6,11 @@ function WoodHeap() {
 	this.typeId = "wood_heap";
 
 	this.woodCount = Math.random() * 90 + 10;
-	this.contactTypes = ["wood_heap"];
+	this.contactTypes = ["wood_heap", "wall"];
+
+    this.identifier = Math.random() * 1000;
+
+    this.updateRadius();
 }
 
 WoodHeap.prototype.setWoodVolume = function(woodVolume) {
@@ -53,5 +57,7 @@ WoodHeap.prototype.processCollision = function(collidedAgent) {
 			collidedAgent.takeWood();
 			this.addWood();
 		}
-	}
+	} else if(collidedAgent && collidedAgent.typeId == "wall") {
+        this.takeWood();
+    }
 };

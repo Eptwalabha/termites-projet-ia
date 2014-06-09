@@ -66,33 +66,137 @@ World.prototype.processCollisions = function() {
 					agent2.processCollision(agent1);				
 				}
 			}
+            this.processPerception(agent1, agent2);
 		}
 	}	
 };
 
-World.prototype.agentsColliding = function(agent1, agent2) {
-	var deltaVect = new Vect(agent1.x - agent2.x, agent1.y - agent2.y);
-	if(deltaVect.length() < (agent1.boundingRadius + agent2.boundingRadius)) {
-		if(agent1.collides(agent2) || agent2.collides(agent1)) {
-			var movedAgent = agent1.collides(agent2) ? agent1 : agent2;
-			var movingAgent = movedAgent == agent1 ? agent2 : agent1;
-			var moveVect = new Vect(movedAgent.x - movingAgent.x,movedAgent.y - movingAgent.y);
-			var moveDistance = (agent1.boundingRadius + agent2.boundingRadius) - deltaVect.length();
-			movedAgent.moveBy(moveVect, moveDistance);
-		}
+World.prototype.processPerception = function(agent1, agent2) {
 
-		return true;
-	}
-	return false;
+    if(this.agentsColliding(agent1, agent2, true)) {
+        agent1.processPerception(agent1);
+    }
+    if(this.agentsColliding(agent2, agent1, true)) {
+        agent2.processPerception(agent1);
+    }
+
 };
+
+World.prototype.agentsColliding = function(agent1, agent2, perception) {
+
+    var agent1Radius = agent1.boundingRadius;
+    if(perception == true) {
+        agent1Radius = agent1.perceptionRadius;
+    }
+
+    if(agent1Radius > 0 && agent2.boundingRadius > 0) {
+        return this.processCircleCircleCollision(agent1, agent2, perception);
+    } else if(agent1Radius > 0 && agent2.boundingWidth > 0) {
+        return this.processCircleRectangleCollision(agent1, agent2, perception);
+    } else if(agent2.boundingRadius > 0 && agent1.boundingWidth > 0) {
+        return this.processCircleRectangleCollision(agent2, agent1);
+    } else if(agent2.boundingWidth > 0 && agent1.boundingWidth > 0) {
+        return this.processRectangleRectangleCollision(agent1, agent2);
+    }
+    return false;
+};
+
+World.prototype.processCircleCircleCollision = function(agent1, agent2, usePerception) {
+
+    var agent1Radius = agent1.boundingRadius;
+    if(usePerception == true) {
+        agent1Radius = agent1.perceptionRadius;
+    }
+
+    var deltaVect = new Vect(agent1.x - agent2.x, agent1.y - agent2.y);
+    if(deltaVect.length() < (agent1Radius + agent2.boundingRadius)) {
+        if(!(usePerception == true)) {
+            if(agent1.collides(agent2) || agent2.collides(agent1)) {
+                var movedAgent = agent1.collides(agent2) ? agent1 : agent2;
+                var movingAgent = movedAgent == agent1 ? agent2 : agent1;
+                var moveVect = new Vect(movedAgent.x - movingAgent.x,movedAgent.y - movingAgent.y);
+                var moveDistance = (agent1Radius + agent2.boundingRadius) - deltaVect.length();
+                movedAgent.moveBy(moveVect, moveDistance);
+            }
+        }
+        return true;
+    }
+    return false;
+};
+
+World.prototype.processCircleRectangleCollision = function(agent1, agent2, usePerception) {
+
+    var agent1Radius = agent1.boundingRadius;
+    if(usePerception == true) {
+        agent1Radius = agent1.perceptionRadius;
+    }
+
+    var circleX = agent1.x;
+    var circleY = agent1.y;
+    var circleRadius = agent1Radius;
+
+    var rectMinX = agent2.x - agent2.boundingWidth/2;
+    var rectMaxX = agent2.x + agent2.boundingWidth/2;
+    var rectMinY = agent2.y - agent2.boundingHeight/2;
+    var rectMaxY = agent2.y + agent2.boundingHeight/2;
+
+    var closestX = (circleX <= rectMinX) ? rectMinX : (circleX >= rectMaxX) ? rectMaxX : circleX;
+    var closestY = (circleY <= rectMinY) ? rectMinY : (circleY >= rectMaxY) ? rectMaxY : circleY;
+
+    var deltaVect = new Vect(circleX - closestX, circleY - closestY);
+
+    if (deltaVect.length() <= circleRadius) {
+        if(!(usePerception == true)) {
+            if(agent1.collides(agent2)) {
+                agent1.x = agent1.previousX;
+                agent1.y = agent1.previousY;
+            } else if(agent2.collides(agent1)) {
+
+            }
+        }
+        return true;
+    }
+    return false;
+};
+
+World.prototype.processRectangleRectangleCollision = function(agent1, agent2) {
+    var rect1MinX = agent1.x - agent1.boundingWidth/2;
+    var rect1MaxX = agent1.x + agent1.boundingWidth/2;
+    var rect1MinY = agent1.y - agent1.boundingHeight/2;
+    var rect1MaxY = agent1.y + agent1.boundingHeight/2;
+
+    var rect2MinX = agent2.x - agent2.boundingWidth/2;
+    var rect2MaxX = agent2.x + agent2.boundingWidth/2;
+    var rect2MinY = agent2.y - agent2.boundingHeight/2;
+    var rect2MaxY = agent2.y + agent2.boundingHeight/2;
+
+
+    var overlapX = false;
+    if(isBetween(rect1MinX, rect2MinX, rect2MaxX)
+        || (isBetween(rect2MinX, rect1MinX, rect1MaxX))) {
+        overlapX = true;
+    }
+
+    var overlapY = false;
+    if(isBetween(rect1MinY, rect2MinY, rect2MaxY)
+        || (isBetween(rect2MinY, rect1MinY, rect1MaxY))) {
+        overlapY = true;
+    }
+
+
+    return (overlapX && overlapY);
+
+};
+
+function isBetween(x, a, b) {
+    return (x >= a) && (x <= b);
+}
 
 World.prototype.agentCollidesBorders = function(agent) {
 	if(agent.x - agent.boundingRadius <= 0) return true;
 	if(agent.x + agent.boundingRadius >= this.width) return true;
 	if(agent.y - agent.boundingRadius <= 0) return true;
-	if(agent.y + agent.boundingRadius >= this.height) return true;
-
-	return false;
+	return (agent.y + agent.boundingRadius >= this.height);
 };
 
 World.prototype.clampPosition = function(agent) {

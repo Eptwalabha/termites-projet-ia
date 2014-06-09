@@ -3,6 +3,10 @@ function Agent () {
 	this.x = 0;
 	this.y = 0;
 	this.boundingRadius = 0;
+    this.boundingWidth = 0;
+    this.boundingHeight = 0;
+
+    this.perceptionRadius = 0;
 	this.collideTypes = [];
 	this.contactTypes = [];
 	
@@ -28,14 +32,16 @@ Agent.prototype.processCollision = function(collidedAgent) {
 
 };
 
-Agent.prototype.collides = function(agent) {
-	return this.collideTypes.indexOf(agent.typeId) != -1;
+Agent.prototype.processPerception = function(perceivedAgent) {
 
+};
+
+Agent.prototype.collides = function(agent) {
+    return this.collideTypes.indexOf(agent.typeId) != -1;
 };
 
 Agent.prototype.contacts = function(agent) {
 	return this.contactTypes.indexOf(agent.typeId) != -1;
-
 };
 
 Agent.prototype.drop = function(agent) {
@@ -43,6 +49,8 @@ Agent.prototype.drop = function(agent) {
 };
 
 Agent.prototype.moveTo = function(x, y) {
+    this.previousX = this.x;
+    this.previousY = this.y;
 	this.x = x;
 	this.y = y;
 };
@@ -52,7 +60,8 @@ Agent.prototype.moveBy = function(direction, length) {
 		var moveVect = new Vect(direction.x, direction.y);
 		moveVect.normalize(length);
 		//console.log(direction.x, direction.y);
-		this.x += moveVect.x;
-		this.y += moveVect.y;
+        var x = this.x + moveVect.x;
+        var y = this.y + moveVect.y;
+        this.moveTo(x, y);
 	}
 };
