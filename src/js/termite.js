@@ -13,7 +13,7 @@ function Termite() {
 
     this.takeARandomDirection();
 
-    this.cariingWood = false;
+    this.caryingWood = false;
 }
 
 Termite.prototype.update = function(dt) {
@@ -40,7 +40,7 @@ Termite.prototype.takeARandomDirection = function () {
 };
 
 Termite.prototype.draw = function(context) {
-    context.fillStyle = this.cariingWood ? "rgba(255, 0, 0, 1)" : "rgba(255, 255, 255, 1)";
+    context.fillStyle = this.caryingWood ? "rgba(0, 255, 0, 1)" : "rgba(255, 255, 255, 1)";
     context.strokeStyle="#001";
     context.beginPath();
     context.arc(this.x, this.y, 2, 0, 2*Math.PI);
@@ -64,12 +64,12 @@ Termite.prototype.processCollision = function(collidedAgent) {
 };
 
 Termite.prototype.woodCollisionStrategy = function(collidedAgent) {
-    if (this.cariingWood)
+    if (this.caryingWood)
         collidedAgent.addWood();
     else
         collidedAgent.takeWood();
 
-    this.cariingWood = !this.cariingWood;
+    this.caryingWood = !this.caryingWood;
     this.pheromoneLeft = 10;
 };
 

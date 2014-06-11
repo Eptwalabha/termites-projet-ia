@@ -9,7 +9,7 @@ h1 {
 canvas {
     margin: auto;
     display: block;
-    background-color: #eee;
+    background-color: ghostwhite;
 	border: 1px solid rgba(0,0,0,.5);
 }
 

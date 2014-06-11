@@ -37,7 +37,7 @@ WoodHeap.prototype.takeWood = function() {
 };
 
 WoodHeap.prototype.draw = function(context) {
-    context.fillStyle="rgba(255, 255, 255, 0.5)";
+    context.fillStyle="rgba(210, 105, 30, 0.5)";
     context.strokeStyle="#000";
     context.beginPath();
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
@@ -47,7 +47,7 @@ WoodHeap.prototype.draw = function(context) {
     context.fillStyle="rgba(0, 0, 0, 1)";
     context.strokeStyle="#000";
     context.beginPath();
-    context.fillText("" + this.woodCount, this.x, this.y);
+    context.fillText("" + this.woodCount, this.x - 5, this.y + 5);
     context.stroke();
 };
 
