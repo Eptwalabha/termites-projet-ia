@@ -130,3 +130,7 @@ canvas {
   text-decoration: none;
   display: none;
 }
+
+div#accordion {
+	margin-top: 50px;
+}
