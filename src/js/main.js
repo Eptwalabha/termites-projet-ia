@@ -61,6 +61,18 @@ function init() {
 //      update();
 }
 
+function toTop() {
+    $("body").animate({scrollTop: 0}, 1000);
+}
+
+$(window).scroll(function() {
+    if ($("body").scrollTop() > 100) {
+        $('.backToTop').fadeIn();
+    } else {
+        $('.backToTop').fadeOut();
+    }
+});
+
 $(document).ready(function() {
 
     init();
@@ -72,14 +84,14 @@ $(document).ready(function() {
         max: 10,
         slide:function() {
             speed = Math.round($('#speedSlider').slider("value"));
-            $('#speedValue').html("Speed:" + speed * 100 + "%");
+            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
         }
     });
 
     $('button.btn-primary').click(
         function () {
             speed = 1;
-            $('#speedValue').html("Speed:" + speed * 100 + "%");
+            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
             $('#speedSlider').slider('value', speed);
         }
     );
@@ -87,7 +99,7 @@ $(document).ready(function() {
     $('button.btn-danger').click(
         function () {
             speed = 0;
-            $('#speedValue').html("Speed:" + speed * 100 + "%");
+            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
             $('#speedSlider').slider('value', speed);
         }
     );
