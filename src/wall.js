@@ -23,7 +23,7 @@ Wall.prototype.setDimension = function(width, height) {
 };
 
 Wall.prototype.draw = function(context) {
-	context.fillStyle = "rgba(255,255,255,0.5)";
+	context.fillStyle = "rgba(255,0,0,0.3)";
 	context.strokeStyle = "#000";
 	context.beginPath();
 	context.rect(this.x - this.boundingWidth/2, this.y - this.boundingHeight/2, this.boundingWidth, this.boundingHeight);
