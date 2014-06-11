@@ -29,7 +29,7 @@
 	function updateTime() {
 		var now = Date.now();
     	dt = now - lastUpdate;
-    	lastUpdate = now;		
+    	lastUpdate = now;
 	}
 
 	function update() {
@@ -40,7 +40,7 @@
 	}
 
 	function init() {
-		
+
 		canvasElement = document.getElementById("canvas");
 		canvasContext = this.canvasElement.getContext("2d");
 
@@ -71,12 +71,12 @@
         for(i = 0; i < 50; i ++) {
 			var termite = new Termite();
 			world.addAgent(termite);
-			termite.moveTo(	canvasElement.width * Math.random(), 
+			termite.moveTo(	canvasElement.width * Math.random(),
 							canvasElement.height * Math.random());
 		}
 
 		var fps = 120;
-		mainLoop = setInterval(update, 1000 / fps); 
+		mainLoop = setInterval(update, 1000 / fps);
 //		update();
 	}
 	</script>
