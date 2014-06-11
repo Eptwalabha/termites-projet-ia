@@ -1,0 +1,23 @@
+body {
+	padding: 50px;
+}
+
+h1 {
+	font-size: 3em;
+}
+
+canvas {
+    margin: auto;
+    display: block;
+    background-color: #eee;
+	border: 1px solid rgba(0,0,0,.5);
+}
+
+.container {
+	text-align: center;
+}
+
+.ui-slider {
+    margin: 20px auto !important;
+    display: block;
+}
