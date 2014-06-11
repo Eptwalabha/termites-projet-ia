@@ -75,4 +75,26 @@ $(document).ready(function() {
             $('#speedValue').html("Speed:" + speed * 100 + "%");
         }
     });
+
+    $('button.btn-primary').click(
+        function () {
+            speed = 1;
+            $('#speedValue').html("Speed:" + speed * 100 + "%");
+            $('#speedSlider').slider('value', speed);
+        }
+    );
+
+    $('button.btn-danger').click(
+        function () {
+            speed = 0;
+            $('#speedValue').html("Speed:" + speed * 100 + "%");
+            $('#speedSlider').slider('value', speed);
+        }
+    );
+
+    $('button.btn-success').click(
+        function () {
+            location.reload();
+        }
+    );
 });
