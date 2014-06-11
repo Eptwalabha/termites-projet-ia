@@ -17,6 +17,11 @@ function Wall() {
 
 }
 
+Wall.prototype.setDimension = function(width, height) {
+    this.boundingWidth = width;
+    this.boundingHeight = height;
+};
+
 Wall.prototype.draw = function(context) {
 	context.fillStyle = "rgba(255,255,255,0.5)";
 	context.strokeStyle = "#000";

@@ -1,0 +1,5 @@
+load:
+  - src/*.js
+  - src/expert_system/*.js
+test:
+  - test/*.js
