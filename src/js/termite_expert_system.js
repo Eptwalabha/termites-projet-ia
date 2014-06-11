@@ -15,7 +15,7 @@ function Termite() {
     this.expertSystem = new ExpertSystem();
     this.initExpertSystem();
     this.takeARandomDirection();
-    this.cariingWood = false;
+    this.caryingWood = false;
     this.last_hit_type = "";
     this.lastWoodHeap = null;
     this.lastPickUpHeap = null;
@@ -63,8 +63,8 @@ Termite.prototype.perceive = function() {
     this.expertSystem.setFactValid("timer_out", (this.nextChange <= 0));
     this.expertSystem.setFactValid("hit_wall", this.last_hit_type == "wall");
     this.expertSystem.setFactValid("hit_heap", this.last_hit_type == "wood_heap");
-    this.expertSystem.setFactValid("charged", this.cariingWood);
-    this.expertSystem.setFactValid("uncharged", !this.cariingWood);
+    this.expertSystem.setFactValid("charged", this.caryingWood);
+    this.expertSystem.setFactValid("uncharged", !this.caryingWood);
     this.expertSystem.setFactValid("different_heap", this.lastWoodHeap != this.lastPickUpHeap || this.lastPickUpHeap == null);
 };
 
@@ -80,17 +80,17 @@ Termite.prototype.act = function(conclusions) {
             this.takeARandomDirection();
         } else if (conclusions[i] == "drop_wood") {
             this.lastWoodHeap.addWood();
-            this.cariingWood = false;
+            this.caryingWood = false;
             this.lastPickUpHeap = this.lastWoodHeap;
         } else if (conclusions[i] == "take_wood") {
             this.lastWoodHeap.takeWood();
-            this.cariingWood = true;
+            this.caryingWood = true;
         }
     }
 };
 
 Termite.prototype.draw = function(context) {
-    context.fillStyle = this.cariingWood ? "rgba(255, 0, 0, 1)" : "rgba(255, 255, 255, 1)";
+    context.fillStyle = this.caryingWood ? "rgba(0, 255, 0, 1)" : "rgba(255, 255, 255, 1)";
     context.strokeStyle="#001";
     context.beginPath();
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
