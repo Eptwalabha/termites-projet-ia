@@ -14,11 +14,15 @@ function Termite() {
     this.speed = 0;
     this.expertSystem = new ExpertSystem();
     this.initExpertSystem();
+    
     this.takeARandomDirection();
+
     this.caryingWood = false;
     this.last_hit_type = "";
     this.lastWoodHeap = null;
     this.lastPickUpHeap = null;
+
+    this.queen = null;
 }
 
 Termite.prototype.initExpertSystem = function() {
@@ -35,8 +39,8 @@ Termite.prototype.initExpertSystem = function() {
 Termite.prototype.takeARandomDirection = function () {
 
     this.destination = {
-        x : Math.random() * 200 - 100,
-        y : Math.random() * 200 - 100
+        x : this.last_hit_type == "wall" ? -1 * this.destination.x + 10 : Math.random() * 200 - 100,
+        y : this.last_hit_type == "wall" ? -1 * this.destination.y - 10 : Math.random() * 200 - 100
     };
 
     this.speed = Math.random() * 150 + 150;
@@ -75,7 +79,7 @@ Termite.prototype.analyze = function() {
 
 Termite.prototype.act = function(conclusions) {
 
-    for (var i = 0, size = conclusions.length; i < size; i++) {
+    for (var i in conclusions) {
         if (conclusions[i] == "change_direction") {
             this.takeARandomDirection();
         } else if (conclusions[i] == "drop_wood") {
@@ -90,12 +94,25 @@ Termite.prototype.act = function(conclusions) {
 };
 
 Termite.prototype.draw = function(context) {
-    context.fillStyle = this.caryingWood ? "rgba(0, 255, 0, 1)" : "rgba(255, 255, 255, 1)";
+    context.fillStyle = this.caryingWood ? "rgba(255, 0, 0, 1)" : "rgba(255, 255, 255, 1)";
     context.strokeStyle="#001";
     context.beginPath();
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
     context.fill();
     context.stroke();
+};
+
+Termite.prototype.hasQueen = function() {
+    return this.queen != null;
+};
+
+Termite.prototype.getQueen = function() {
+    return this.queen;
+};
+
+Termite.prototype.setQueen = function(queen) {
+    this.queen = queen;
+    this.queen.informNewAgent(this);
 };
 
 Termite.prototype.processCollision = function(collidedAgent) {
@@ -109,6 +126,140 @@ Termite.prototype.processCollision = function(collidedAgent) {
 
     if (this.last_hit_type == "wood_heap") {
         this.lastWoodHeap = collidedAgent;
+
+        if(!this.lastWoodHeap.hasQueen() && !this.lastWoodHeap.hasPheromone()) {
+
+            if(this.hasQueen()) {
+
+                if(this.lastWoodHeap.woodCount + 20 < this.getQueen().getPower()) {
+                    var pheromone = new Pheromone(this.getQueen());
+                    world.addAgent(pheromone);
+                    this.lastWoodHeap.setPheromone(pheromone);
+                    if (!this.caryingWood){
+                        this.lastWoodHeap.takeWood();
+                        this.caryingWood = true;
+                    }
+
+                    // retourne auprès de sa reine pour l'informer du nouveau tas de bois
+                }
+
+                else if (this.lastWoodHeap.woodCount > this.getQueen().getPower() + 20) {
+
+                    var oldQueen = this.queen;
+
+                    this.queen = new Queen(
+                        {
+                            x: this.lastWoodHeap.x,
+                            y: this.lastWoodHeap.y,
+                            power: this.lastWoodHeap.woodCount
+                        }
+                    );
+
+                    this.queen.informNewAgent(this);
+                    this.queen.informNewAgent(oldQueen);
+
+                    this.lastWoodHeap.setQueen(this.queen);
+                    world.addAgent(this.queen);
+
+                }
+
+            }
+
+            else {
+                this.queen = new Queen(
+                    {
+                        x: this.lastWoodHeap.x,
+                        y: this.lastWoodHeap.y,
+                        power: this.lastWoodHeap.woodCount
+                    }
+                );
+
+                this.queen.informNewAgent(this);
+
+                this.lastWoodHeap.setQueen(this.queen);
+                world.addAgent(this.queen);
+            }
+        }
+
+        else if(this.lastWoodHeap.hasPheromone()) {
+
+            var somme = this.lastWoodHeap.woodCount + this.lastWoodHeap.getPheromone().getQueen().getPower();
+            if(this.hasQueen()){
+                if((this.getQueen().getPower() + 20 ) < somme){
+                    this.setQueen(this.lastWoodHeap.getPheromone().getQueen());
+
+                    //informer nouvelle reine de la position de l'ancienne
+                }
+                else if(this.getQueen().getPower() > (somme + 20)){
+                    var pheromone = new Pheromone(this.getQueen());
+                    world.addAgent(pheromone);
+                    this.lastWoodHeap.setPheromone(pheromone);
+
+                    //retourner auprès de la reine pour l'informer
+                }
+                else{
+                    if (!this.caryingWood){
+                        this.lastWoodHeap.takeWood();
+                        this.caryingWood = true;
+                    }
+                }
+            }
+            else{
+                this.setQueen(this.lastWoodHeap.getPheromone().getQueen());
+            }
+        } 
+
+        else {
+
+            if(!this.queen) {
+
+                this.setQueen(this.lastWoodHeap.getQueen());
+            
+            } else if (this.queen.id !== this.lastWoodHeap.getQueen().id) {
+
+
+                if(this.getQueen().getPower() > (this.lastWoodHeap.getQueen().getPower() + 20)) {
+                    
+                    this.lastWoodHeap.killQueen();
+
+                    // aller informer ma reine du nouveau tas de bois
+
+                    var pheromone = new Pheromone(this.getQueen());
+                    world.addAgent(pheromone);
+                    this.lastWoodHeap.setPheromone(pheromone);
+
+                } else if((this.getQueen().getPower() + 20) < this.lastWoodHeap.getQueen().getPower()) {
+
+                    // jurer fidélité nouvelle reine et informer position ancienne reine
+
+                } else {
+
+                    // prendre bout de bois et retourner informer ma reine
+
+                }
+
+            }
+
+        }
+    }
+
+    else if(this.last_hit_type == "termite") {
+        if(collidedAgent.hasQueen()) {
+
+            if(this.hasQueen()) {
+
+                if(this.getQueen().getPower() > (collidedAgent.getQueen().getPower() + 20)) {
+                    collidedAgent.setQueen(this.getQueen());
+                } else if((this.getQueen().getPower() + 20) < collidedAgent.getQueen().getPower()) {
+                    this.setQueen(collidedAgent.getQueen());
+                }
+
+            } else {
+                this.setQueen(collidedAgent.getQueen());
+            }
+        } else if(this.hasQueen()) {
+            collidedAgent.setQueen(this.getQueen());
+        }
     }
 };
 

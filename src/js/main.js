@@ -1,4 +1,3 @@
-var world = null;
 var canvasElement = null;
 var canvasContext = null;
 var speed = 1;
@@ -37,9 +36,9 @@ function init() {
         woodVolume -= volumeToTakeAway;
 
         var woodHeap = new WoodHeap();
-            world.addAgent(woodHeap);
-            woodHeap.setWoodVolume(volumeToTakeAway);
-            woodHeap.moveTo(canvasElement.width * Math.random(), canvasElement.height * Math.random());
+        world.addAgent(woodHeap);
+        woodHeap.setWoodVolume(volumeToTakeAway);
+        woodHeap.moveTo(canvasElement.width * Math.random(), canvasElement.height * Math.random());
     }
 
     for(var i = 0; i < 6; i++) {
@@ -49,7 +48,7 @@ function init() {
                         canvasElement.height * Math.random());
     }
 
-    for(i = 0; i < 50; i ++) {
+    for(i = 0; i < 100; i ++) {
         var termite = new Termite();
         world.addAgent(termite);
         termite.moveTo( canvasElement.width * Math.random(), 

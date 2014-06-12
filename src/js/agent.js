@@ -14,6 +14,8 @@ function Agent () {
 	this.dead = false;
 
     this.world = null;
+
+    this.id = GLOBAL_CONSTANT_ID++;
 }
 
 Agent.prototype.setWorld = function(world) {
@@ -25,6 +27,10 @@ Agent.prototype.update = function(dt) {
 };
 
 Agent.prototype.draw = function(context) {
+
+};
+
+Agent.prototype.destroy = function() {
 
 };
 
