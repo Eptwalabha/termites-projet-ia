@@ -1,23 +1,65 @@
 function GeneticAlgorithm(woodHeaps, walls) {
     this.woodHeaps = woodHeaps;
     this.walls = walls;
-    this.generation = [];
+    this.generation = 0;
+    this.population = [];
+    this.dimension = {width: 0, height: 0};
     this.graph = new Graph();
-    this.makeRandomGeneration(20);
+    this.fitnessThreshold = 0;
+    this.populationSize = 10;
+//    this.makeRandomGeneration(20);
 }
 
-GeneticAlgorithm.prototype.makeRandomGeneration = function (nbrEntity) {
+GeneticAlgorithm.prototype.addNewEntity = function () {
+    this.population.push(new Graph());
+};
 
+GeneticAlgorithm.prototype.makeRandomGeneration = function (nbrEntity) {
     for (var i = 0; i < nbrEntity; i++) {
         var graph = new Graph();
         graph.randomize(this.walls, {"width": 500, "height": 500});
-        this.generation.push()
+        this.population.push()
     }
+};
 
+GeneticAlgorithm.prototype.setPopulationSize = function (populationSize) {
+    this.populationSize = populationSize;
 };
 
 GeneticAlgorithm.prototype.processGeneration = function() {
 
+};
+
+GeneticAlgorithm.prototype.getFitnessScore = function(entity) {
+
+    entity.fitness = {};
+    var sumDelta = 0;
+    var nbrEdges = entity.edges.length;
+
+    entity.fitness.edge = nbrEdges / 400;
+
+    if (nbrEdges == 0) {
+        entity.fitness.averageDelta = 0;
+        entity.fitness.total = 0;
+        return;
+    }
+
+    for (var i = 0; i < nbrEdges; i++) {
+        sumDelta += entity.edges[i].getSquareDist();
+    }
+
+    entity.fitness.averageDelta = sumDelta / nbrEdges;
+    entity.fitness.total = 10;
+
+};
+
+GeneticAlgorithm.prototype.setWorldDimension = function(width, height) {
+    this.dimension.width = width;
+    this.dimension.height = height;
+};
+
+GeneticAlgorithm.prototype.setFitnessThreshold = function(fitnessThreshold) {
+    this.fitnessThreshold = fitnessThreshold;
 };
 
 GeneticAlgorithm.prototype.combineGraph = function(graphA, graphB) {

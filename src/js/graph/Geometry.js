@@ -40,16 +40,16 @@ var lineSegmentTouchesOrCrossesLine = function(edgeA, edgeB) {
 
 var doEdgeIntersectsWall = function(edge, wall) {
     var boxWall = getBoundingBoxFromWall(wall);
-    var edgeWallA = new Edge(boxWall[0], boxWall[1]);
-    var edgeWallB = new Edge(boxWall[1], boxWall[2]);
-    var edgeWallC = new Edge(boxWall[2], boxWall[3]);
-    var edgeWallD = new Edge(boxWall[3], boxWall[0]);
+    var bottom = new Edge(boxWall[0], boxWall[1]);
+    var right = new Edge(boxWall[1], boxWall[2]);
+    var top = new Edge(boxWall[2], boxWall[3]);
+    var left = new Edge(boxWall[3], boxWall[0]);
 
-    return doEdgeIntersectsEdge(edge, edgeWallA) || doEdgeIntersectsEdge(edge, edgeWallB) ||
-        doEdgeIntersectsEdge(edge, edgeWallC) || doEdgeIntersectsEdge(edge, edgeWallD);
+    return doEdgesIntersect(edge, bottom) || doEdgesIntersect(edge, right) ||
+        doEdgesIntersect(edge, top) || doEdgesIntersect(edge, left);
 };
 
-var doEdgeIntersectsEdge = function(edgeA, edgeB) {
+var doEdgesIntersect = function(edgeA, edgeB) {
     var boxA = getBoundingBoxFromEdge(edgeA);
     var boxB = getBoundingBoxFromEdge(edgeB);
 

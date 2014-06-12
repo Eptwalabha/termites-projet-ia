@@ -1,0 +1,8 @@
+load:
+  - ../src/js/graph/*.js
+  - ../src/js/common/*.js
+  - ../src/js/constants.js
+  - ../src/js/agent.js
+  - ../src/js/wall.js
+test:
+  - ../test/algorithme/GeneticAlgorithmTest.js

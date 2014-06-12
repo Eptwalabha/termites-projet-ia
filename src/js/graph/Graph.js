@@ -1,6 +1,7 @@
 Graph = function(){
     this.vertices = [];
     this.edges = [];
+    this.fitness = {};
 };
 
 Vertex = function(x, y){
@@ -94,4 +95,10 @@ Graph.prototype.draw = function(context) {
         context.arc(this.vertices[i].x, this.vertices[i].y, 4, 0, 2*Math.PI);
         context.stroke();
     }
+};
+
+Edge.prototype.getSquareDist = function() {
+    var deltaX = this.a.x - this.b.x;
+    var deltaY = this.a.y - this.b.y;
+    return deltaX * deltaX + deltaY * deltaY;
 };
