@@ -1,6 +1,6 @@
 var getBoundingBoxFromWall = function(wall) {
-    var halfWidth = wall.boundingWidth / 2;
-    var halfHeight = wall.boundingHeight / 2;
+    var halfWidth = wall.boundingWidth / 2 + 3;
+    var halfHeight = wall.boundingHeight / 2 + 3;
     var bottomLeft = new Vertex(wall.x - halfWidth, wall.y - halfHeight);
     var bottomRight = new Vertex(wall.x + halfWidth, wall.y - halfHeight);
     var topRight = new Vertex(wall.x + halfWidth, wall.y + halfHeight);
@@ -22,6 +22,12 @@ var min = function (a, b) {
     return (a < b) ? a : b;
 };
 
+var isPointInWall = function(vertex, wall) {
+    var box = getBoundingBoxFromWall(wall);
+    return vertex.x >= box[0].x && vertex.x <= box[2].x &&
+        vertex.y >= box[0].y && vertex.y <= box[2].y;
+};
+
 var areTheseBoundingBoxesColliding = function(boundingBoxA, boundingBoxB) {
     return boundingBoxA[1].x >= boundingBoxB[0].x && boundingBoxA[0].x <= boundingBoxB[1].x &&
         boundingBoxA[1].y >= boundingBoxB[0].y && boundingBoxA[0].y <= boundingBoxB[1].y;
@@ -29,20 +35,27 @@ var areTheseBoundingBoxesColliding = function(boundingBoxA, boundingBoxB) {
 
 var lineSegmentTouchesOrCrossesLine = function(edgeA, edgeB) {
     var temp = isPointRightOfLine(edgeA, edgeB.b);
-    return isPointOnLine(edgeA, edgeB.a) || isPointOnLine(edgeA, edgeB.b) ||
-        (isPointRightOfLine(edgeA, edgeB.a) ? !temp : temp);
+    return isPointOnLine(edgeA, edgeB.a) || isPointOnLine(edgeA, edgeB.b) || (isPointRightOfLine(edgeA, edgeB.a) ? !temp : temp);
 };
 
 var doEdgeIntersectsWall = function(edge, wall) {
-    var box1 = getBoundingBoxFromEdge(edge);
     var boxWall = getBoundingBoxFromWall(wall);
-    var edgeWallA = new Edge(boxWall[0], boxWall[2]);
-    var edgeWallB = new Edge(boxWall[1], boxWall[3]);
-    return areTheseBoundingBoxesColliding(box1, [boxWall[0], boxWall[2]])
-        && lineSegmentTouchesOrCrossesLine(edge, edgeWallA)
-        && lineSegmentTouchesOrCrossesLine(edge, edgeWallB)
-        && lineSegmentTouchesOrCrossesLine(edgeWallA, edge)
-        && lineSegmentTouchesOrCrossesLine(edgeWallB, edge);
+    var edgeWallA = new Edge(boxWall[0], boxWall[1]);
+    var edgeWallB = new Edge(boxWall[1], boxWall[2]);
+    var edgeWallC = new Edge(boxWall[2], boxWall[3]);
+    var edgeWallD = new Edge(boxWall[3], boxWall[0]);
+
+    return doEdgeIntersectsEdge(edge, edgeWallA) || doEdgeIntersectsEdge(edge, edgeWallB) ||
+        doEdgeIntersectsEdge(edge, edgeWallC) || doEdgeIntersectsEdge(edge, edgeWallD);
+};
+
+var doEdgeIntersectsEdge = function(edgeA, edgeB) {
+    var boxA = getBoundingBoxFromEdge(edgeA);
+    var boxB = getBoundingBoxFromEdge(edgeB);
+
+    return areTheseBoundingBoxesColliding(boxA, boxB)
+        && lineSegmentTouchesOrCrossesLine(edgeA, edgeB)
+        && lineSegmentTouchesOrCrossesLine(edgeB, edgeA);
 };
 
 var isPointOnLine = function(edge, vertex) {
