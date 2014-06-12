@@ -10,15 +10,25 @@ function WoodHeap() {
 
     this.identifier = Math.random() * 1000;
 
+    this.queen = null;
+    this.pheromone = null;
+
     this.updateRadius();
 }
 
 WoodHeap.prototype.setWoodVolume = function(woodVolume) {
     this.woodCount = woodVolume;
+    if(this.woodCount <= 0) {
+		this.dead = true;
+	}
+
+	if(this.queen) {
+		this.queen.setPower(this.woodCount);
+	}
 };
 
 WoodHeap.prototype.updateRadius = function() {
-	this.boundingRadius = Math.sqrt(this.woodCount / Math.PI) / 2 * 20;
+	this.boundingRadius = Math.sqrt(this.woodCount * 4);
 };
 
 WoodHeap.prototype.update = function(dt) {
@@ -26,18 +36,25 @@ WoodHeap.prototype.update = function(dt) {
 };
 
 WoodHeap.prototype.addWood = function() {
-	this.woodCount++;
+	this.setWoodVolume(++this.woodCount);
 };
 
 WoodHeap.prototype.takeWood = function() {
-	this.woodCount--;
-	if(this.woodCount <= 0) {
-		this.dead = true;
-	}
+	this.setWoodVolume(--this.woodCount);
+	
+};
+
+WoodHeap.prototype.hasQueen = function() {
+	return this.queen;
+};
+
+
+WoodHeap.prototype.setQueen = function(queen) {
+	this.queen = queen;
 };
 
 WoodHeap.prototype.draw = function(context) {
-    context.fillStyle="rgba(210, 105, 30, 0.5)";
+    context.fillStyle = (this.hasQueen() ? "rgba(0, 255, 0, 0.3)" : (this.hasPheromone() ? "rgba(255, 255, 0, 0.3)" : "rgba(210, 105, 30, 0.3)"));
     context.strokeStyle="#000";
     context.beginPath();
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
@@ -47,7 +64,7 @@ WoodHeap.prototype.draw = function(context) {
     context.fillStyle="rgba(0, 0, 0, 1)";
     context.strokeStyle="#000";
     context.beginPath();
-    context.fillText("" + this.woodCount, this.x - 5, this.y + 5);
+    context.fillText("" + this.woodCount, this.x, this.y - 20);
     context.stroke();
 };
 
@@ -60,4 +77,31 @@ WoodHeap.prototype.processCollision = function(collidedAgent) {
 	} else if(collidedAgent && collidedAgent.typeId == "wall") {
         this.takeWood();
     }
+};
+
+WoodHeap.prototype.getQueen = function() {
+	return this.queen;
+};
+
+WoodHeap.prototype.killQueen = function() {
+	this.queen.dead = true;
+	this.queen = null;
+};
+
+WoodHeap.prototype.hasPheromone = function() {
+	return (this.pheromone !== null);
+};
+
+WoodHeap.prototype.setPheromone = function(pheromone) {
+	this.pheromone = pheromone;
+};
+
+WoodHeap.prototype.getPheromone = function() {
+	return this.pheromone;
+};
+
+WoodHeap.prototype.destroy = function() {
+	if(this.hasQueen()) {
+		this.killQueen();
+	}
 };
