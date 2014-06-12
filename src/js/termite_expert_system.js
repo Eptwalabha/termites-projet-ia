@@ -130,9 +130,6 @@ Termite.prototype.processCollision = function(collidedAgent) {
         if(!this.lastWoodHeap.hasQueen() && !this.lastWoodHeap.hasPheromone()) {
 
             if(this.hasQueen()) {
-                // Le tas de bois est plus petit (20 points) que la puissance de sa reine actuelle.
-                // Il laisse le phéromone de sa reine sur le tas de bois, le récolte et retourne auprès de sa reine en l’informant
-                // de la position du tas de bois.
 
                 if(this.lastWoodHeap.woodCount + 20 < this.getQueen().getPower()) {
                     var pheromone = new Pheromone(this.getQueen());
@@ -142,10 +139,30 @@ Termite.prototype.processCollision = function(collidedAgent) {
                         this.lastWoodHeap.takeWood();
                         this.caryingWood = true;
                     }
+
+                    // retourne auprès de sa reine pour l'informer du nouveau tas de bois
                 }
 
-                // Le tas de bois est plus grand (20 points) que la puissance de sa reine actuelle.
-                // Il va alors changer le tas de bois en termitière et informer sa nouvelle reine de la position de son ancienne.
+                else if (this.lastWoodHeap.woodCount > this.getQueen().getPower() + 20) {
+
+                    var oldQueen = this.queen;
+
+                    this.queen = new Queen(
+                        {
+                            x: this.lastWoodHeap.x,
+                            y: this.lastWoodHeap.y,
+                            power: this.lastWoodHeap.woodCount
+                        }
+                    );
+
+                    this.queen.informNewAgent(this);
+                    this.queen.informNewAgent(oldQueen);
+
+                    this.lastWoodHeap.setQueen(this.queen);
+                    world.addAgent(this.queen);
+
+                }
+
             }
 
             else {
