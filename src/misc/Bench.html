@@ -48,7 +48,9 @@
                 wallList.push(wall);
             }
 
+            var time = new Date().getTime();
             graph.randomize(wallList, canvasElement);
+            console.log("init time = " + (new Date().getTime() - time) + "ms, counter = " + counter);
 
             var fps = 120;
             mainLoop = setInterval(update, 1000 / fps);

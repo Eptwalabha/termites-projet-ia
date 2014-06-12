@@ -30,25 +30,31 @@ Graph.prototype.generateEdges = function() {
     }
 };
 
-Graph.prototype.randomize = function(walls, canvasElement) {
-
-    var width = canvasElement.width / 6;
-    var height = canvasElement.height / 6;
+Graph.prototype.randomizeVertices = function(nbr, width, height, walls) {
     this.vertices = [];
-    for (var i = 0; i < 7; i++) {
-        for (var j = 0; j < 7; j++) {
-            var noCollide = true;
-            var vertex = new Vertex(width * i, height * j);
+    for (var i = 0; i < nbr; i++) {
+        var noCollide, vertex;
+        do {
+            noCollide = true;
+            vertex = new Vertex(width * Math.random(), height * Math.random());
             for (var k = 0, size2 = walls.length; k < size2; k++) {
                 if (isPointInWall(vertex, walls[k])) {
                     noCollide = false;
                     break;
                 }
             }
-            if (noCollide)
-                this.vertices.push(vertex);
-        }
+        } while(!noCollide);
+        this.vertices.push(vertex);
     }
+};
+
+Graph.prototype.randomize = function(walls, canvasElement) {
+    var nbr = 75;
+    var width = canvasElement.width;
+    var height = canvasElement.height;
+
+    this.randomizeVertices(nbr, width, height, walls);
+
     this.generateEdges();
     var edgeList = this.edges;
     this.edges = [];
@@ -60,7 +66,7 @@ Graph.prototype.randomize = function(walls, canvasElement) {
     for (var j = 0, size = edgeList.length; j < size; j++) {
         var insert = true;
         var edgeToTest = edgeList[j];
-        for (k = 0, size2 = walls.length; k < size2; k++) {
+        for (var k = 0, size2 = walls.length; k < size2; k++) {
             if (doEdgeIntersectsWall(edgeToTest, walls[k])) {
                 insert = false;
                 break;
@@ -75,16 +81,17 @@ Graph.prototype.randomize = function(walls, canvasElement) {
 };
 
 Graph.prototype.draw = function(context) {
-    context.strokeStyle="#001";
-    for (var i = 0, verticesSize = this.vertices.length; i < verticesSize; i++) {
-        context.beginPath();
-        context.arc(this.vertices[i].x, this.vertices[i].y, 4, 0, 2*Math.PI);
-        context.stroke();
-    }
+    context.strokeStyle="#00F";
     for (var j = 0, edgesSize = this.edges.length; j < edgesSize; j++) {
         context.beginPath();
         context.moveTo(this.edges[j].a.x, this.edges[j].a.y);
         context.lineTo(this.edges[j].b.x, this.edges[j].b.y);
+        context.stroke();
+    }
+    context.strokeStyle="#F00";
+    for (var i = 0, verticesSize = this.vertices.length; i < verticesSize; i++) {
+        context.beginPath();
+        context.arc(this.vertices[i].x, this.vertices[i].y, 4, 0, 2*Math.PI);
         context.stroke();
     }
 };
