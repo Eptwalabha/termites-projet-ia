@@ -50,9 +50,11 @@ Graph.prototype.randomizeVertices = function(nbr, width, height, walls) {
 };
 
 Graph.prototype.randomize = function(walls, canvasElement) {
-    var nbr = 75;
+    var nbr = 20;
     var width = canvasElement.width;
     var height = canvasElement.height;
+
+    var time_graph = new Date().getTime();
 
     this.randomizeVertices(nbr, width, height, walls);
 
@@ -78,7 +80,7 @@ Graph.prototype.randomize = function(walls, canvasElement) {
         }
     }
 
-    console.log("edge counter= " + this.edges.length);
+    console.log("time = " + (new Date().getTime() - time_graph) + "ms, edge counter = " + this.edges.length);
 };
 
 Graph.prototype.draw = function(context) {
@@ -95,6 +97,16 @@ Graph.prototype.draw = function(context) {
         context.arc(this.vertices[i].x, this.vertices[i].y, 4, 0, 2*Math.PI);
         context.stroke();
     }
+};
+
+Graph.prototype.hasVertex = function(position) {
+    for (var i = 0, size = this.vertices.length; i < size; i++) {
+        var vertex = this.vertices[i];
+        if (vertex.x == position[0] && vertex.y == position[1]) {
+            return true;
+        }
+    }
+    return false;
 };
 
 Edge.prototype.getSquareDist = function() {

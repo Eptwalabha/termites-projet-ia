@@ -1,8 +1,11 @@
 load:
   - ../src/js/graph/*.js
   - ../src/js/common/*.js
+  - ../src/js/expert_system/*.js
   - ../src/js/constants.js
   - ../src/js/agent.js
+  - ../src/js/queen.js
   - ../src/js/wall.js
+  - ../src/js/wood_heap.js
 test:
   - ../test/algorithme/GeneticAlgorithmTest.js

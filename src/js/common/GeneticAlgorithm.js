@@ -1,5 +1,4 @@
 function GeneticAlgorithm(woodHeaps, walls) {
-    this.woodHeaps = woodHeaps;
     this.walls = walls;
     this.generation = 0;
     this.population = [];
@@ -7,7 +6,6 @@ function GeneticAlgorithm(woodHeaps, walls) {
     this.graph = new Graph();
     this.fitnessThreshold = 0;
     this.populationSize = 10;
-//    this.makeRandomGeneration(20);
 }
 
 GeneticAlgorithm.prototype.addNewEntity = function () {
@@ -31,26 +29,7 @@ GeneticAlgorithm.prototype.processGeneration = function() {
 };
 
 GeneticAlgorithm.prototype.getFitnessScore = function(entity) {
-
-    entity.fitness = {};
-    var sumDelta = 0;
-    var nbrEdges = entity.edges.length;
-
-    entity.fitness.edge = nbrEdges / 400;
-
-    if (nbrEdges == 0) {
-        entity.fitness.averageDelta = 0;
-        entity.fitness.total = 0;
-        return;
-    }
-
-    for (var i = 0; i < nbrEdges; i++) {
-        sumDelta += entity.edges[i].getSquareDist();
-    }
-
-    entity.fitness.averageDelta = sumDelta / nbrEdges;
-    entity.fitness.total = 10;
-
+    return 0;
 };
 
 GeneticAlgorithm.prototype.setWorldDimension = function(width, height) {
@@ -81,6 +60,35 @@ GeneticAlgorithm.prototype.combineGraph = function(graphA, graphB) {
     }
 
     return [newGraphA, newGraphB];
+};
+
+GeneticAlgorithm.prototype.generateRandomGraph = function(queen) {
+
+    var knownWoodHeap = queen.knownWoodHeaps;
+    var knownWalls = queen.knownWalls;
+
+    var graph = new Graph();
+    for (var i in knownWoodHeap) {
+        graph.vertices.push(new Vertex(knownWoodHeap[i].x, knownWoodHeap[i].y));
+    }
+
+    while (graph.vertices.length < 20) {
+//        var vertex = new Vertex(Math.random() * canvasContext.width, Math.random() * canvasContext.height);
+        var vertex = new Vertex(Math.random() * 600, Math.random() * 600);
+
+        var collide = false;
+        for (var j in knownWalls) {
+            if (isPointInWall(vertex, knownWalls[j])) {
+                collide = true;
+                break;
+            }
+        }
+        if (!collide) {
+            graph.vertices.push(new Vertex())
+        }
+    }
+
+    return graph;
 };
 
 GeneticAlgorithm.prototype.alterGraphDNA = function(graph) {
