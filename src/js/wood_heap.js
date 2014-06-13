@@ -88,12 +88,22 @@ WoodHeap.prototype.killQueen = function() {
 	this.queen = null;
 };
 
+WoodHeap.prototype.killPheromone = function() {
+	this.pheromone.dead = true;
+	this.pheromone = null;
+};
+
 WoodHeap.prototype.hasPheromone = function() {
-	return (this.pheromone !== null);
+	return (this.pheromone !== null && this.pheromone !== undefined);
 };
 
 WoodHeap.prototype.setPheromone = function(pheromone) {
+	if(this.hasPheromone()) {
+		this.killPheromone();
+	}
+
 	this.pheromone = pheromone;
+	this.pheromone.setWoodHeap(this);
 };
 
 WoodHeap.prototype.getPheromone = function() {
@@ -103,5 +113,9 @@ WoodHeap.prototype.getPheromone = function() {
 WoodHeap.prototype.destroy = function() {
 	if(this.hasQueen()) {
 		this.killQueen();
+	}
+
+	if(this.hasPheromone()) {
+		this.killPheromone();
 	}
 };

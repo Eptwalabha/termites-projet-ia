@@ -1,6 +1,7 @@
 var canvasElement = null;
 var canvasContext = null;
 var speed = 1;
+var oldSpeed = 1;
 
 var mainLoop = null;
 var lastUpdate = Date.now();
@@ -76,29 +77,36 @@ $(document).ready(function() {
 
     init();
 
+    $('input#umbilical').change(
+        function () {
+            GLOBAL_DRAW_UMBILICAL = !GLOBAL_DRAW_UMBILICAL;
+        }
+    );
+
     $('#speedSlider').slider({
         value: speed,
         step: 0.01,
         min: 0,
         max: 10,
         slide:function() {
-            speed = Math.round($('#speedSlider').slider("value"));
-            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
+            speed = $('#speedSlider').slider("value");
+            $('#speedValue').html("Vitesse:" + Math.floor(speed * 100) + "%");
         }
     });
 
     $('button.btn-primary').click(
         function () {
-            speed = 1;
-            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
+            speed = oldSpeed;
+            $('#speedValue').html("Vitesse:" + Math.floor(speed * 100) + "%");
             $('#speedSlider').slider('value', speed);
         }
     );
 
     $('button.btn-danger').click(
         function () {
+            oldSpeed = speed;
             speed = 0;
-            $('#speedValue').html("Vitesse:" + speed * 100 + "%");
+            $('#speedValue').html("Vitesse:" + Math.floor(speed * 100) + "%");
             $('#speedSlider').slider('value', speed);
         }
     );

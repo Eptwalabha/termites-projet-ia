@@ -20,20 +20,83 @@ function Termite() {
     this.caryingWood = false;
     this.last_hit_type = "";
     this.lastWoodHeap = null;
+    this.lastTermite = null;
     this.lastPickUpHeap = null;
 
     this.queen = null;
 }
 
 Termite.prototype.initExpertSystem = function() {
-//    this.expertSystem = new ExpertSystem();
 
-//	this.expertSystem.addRule("goal", ["premise1", "premise2"]);
+    // Lorsqu’un termite “rōnin” rencontre un tas de bois sans reine, il change ce tas de bois en termitière
+    // en y plaçant une nouvelle reine et se change en termite “ouvrier”.
+    this.expertSystem.addRule("drop_queen", ["hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+    this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+
+    // Lorsqu’un termite “rōnin” rencontre une termitière, il jure fidélité à la reine qui la dirige et devient un termite “ouvrier”
+    this.expertSystem.addRule("ally_queen", ["hit_heap", "dontHasQueen", "wood_heapHasQueen"]);
+
+    // Si un termite “ouvrier” rencontre un termite “rōnin” ou un termite “ouvrier” d’une reine différente
+    // et moins puissante, celui-ci rallie ce dernier à sa cause.
+    this.expertSystem.addRule("propagate_queen", ["hit_termite", "hasQueen", "lastTermiteDontHasQueen"]);
+    this.expertSystem.addRule("propagate_queen", ["hit_termite", "hasQueen", "lastTermiteHasQueen", "queenMorePowerfulThanOtherTermiteQueen"]);
+
+    // Si un termite “ouvrier” rencontre une termitière d’une autre reine, trois cas de figure se présentent à lui :
+        
+        // 1 - Sa reine est plus puissante (de 20 points) il va alors éliminer la reine et marquer la termitière comme “déchue”
+        // (pour que d’autre individu ne rechange plus le tas de bois en termitière). Afin que les ouvriers de la termitière “déchue”
+        // ne redeviennent pas des “rōnins” le termite laisse le phéromone de sa propre reine sur le tas de bois. Pour finir,
+        // le termite retourne auprès de sa reine pour l’informer de son régicide (ainsi que la position de la termitière “déchue”).
+        this.expertSystem.addRule("kill_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+
+        // 2 - Sa reine est moins puissante (de 20 points) il va alors juré fidélité à sa nouvelle reine et l’informer
+        // de la position de son ancienne reine.
+        this.expertSystem.addRule("ally_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenLessPowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "queenLessPowerfulThanOtherWoodHeapQueen"]);
+
+        // 3 - Sa reine est aussi puissante (différence inférieure à 20 points), le termite va simplement prendre un
+        // bout de bois de la termitière et retourner auprès de sa reine pour l’informer de la position de la termitière rencontrée.
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen", "uncharged"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen"]);
+
+    // Si un termite rencontre un tas de bois sans reine et sans phéromone, deux options s’offrent à lui :
+
+        // 1 - Le tas de bois est plus petit (20 points) que la puissance de sa reine actuelle. Il laisse
+        // le phéromone de sa reine sur le tas de bois, le récolte et retourne auprès de sa reine en l’informant
+        // de la position du tas de bois.
+        this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone", "wood_heapSmallerThanQueen"]);
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone", "wood_heapSmallerThanQueen", "uncharged"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone", "wood_heapSmallerThanQueen"]);
+
+        // 2 - Le tas de bois est plus grand (20 points) que la puissance de sa reine actuelle.
+        // Il va alors changer le tas de bois en termitière et informer sa nouvelle reine de la position de son ancienne.
+        this.expertSystem.addRule("drop_queen", ["hit_heap", "hasQueen", "wood_heapBiggerThanQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+        this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapBiggerThanQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+
+    // Si un termite rencontre un tas de bois avec un phéromone différent de celui de sa reine, il va effectuer
+    // la somme du tas de bois et de la puissance de la reine qui le collecte.
+    // En fonction de la somme, deux options s’offrent à lui :
+
+        // 1 - La puissance de sa reine est plus petite que la somme (20 points).
+        // Il va jurer fidélité à la reine qui collecte le tas de bois et informer celle-ci de la position de son ancienne reine.
+        this.expertSystem.addRule("ally_queen", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneNotQueens", "sumWithOtherPheromoneIsBiggerThanQueen"]);
+        
+        // 2 - La puissance de sa reine est plus grande que la somme (20 points).
+        // Il va écraser le phéromone par celui de sa reine, et retourne auprès de celle-ci pour lui communiquer la position de l’autre.
+        this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneNotQueens", "sumWithOtherPheromoneIsSmallerThanQueen"]);
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneNotQueens", "sumWithOtherPheromoneIsSmallerThanQueen"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneNotQueens", "sumWithOtherPheromoneIsSmallerThanQueen"]);
+    
+    // Si on retombe sur notre termitière, on donne le bout de bois
+    this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
+
+    // Si le termite rencontre un mur ou un tas, il change de direction
     this.expertSystem.addRule("change_direction", ["timer_out"]);
     this.expertSystem.addRule("change_direction", ["hit_wall"]);
     this.expertSystem.addRule("change_direction", ["hit_heap"]);
-    this.expertSystem.addRule("drop_wood", ["hit_heap", "charged", "different_heap"]);
-    this.expertSystem.addRule("take_wood", ["hit_heap", "uncharged"]);
+
 };
 
 Termite.prototype.takeARandomDirection = function () {
@@ -67,9 +130,37 @@ Termite.prototype.perceive = function() {
     this.expertSystem.setFactValid("timer_out", (this.nextChange <= 0));
     this.expertSystem.setFactValid("hit_wall", this.last_hit_type == "wall");
     this.expertSystem.setFactValid("hit_heap", this.last_hit_type == "wood_heap");
+    this.expertSystem.setFactValid("hit_termite", this.last_hit_type == "termite");
     this.expertSystem.setFactValid("charged", this.caryingWood);
     this.expertSystem.setFactValid("uncharged", !this.caryingWood);
     this.expertSystem.setFactValid("different_heap", this.lastWoodHeap != this.lastPickUpHeap || this.lastPickUpHeap == null);
+
+    this.expertSystem.setFactValid("hasQueen", this.hasQueen());
+    this.expertSystem.setFactValid("dontHasQueen", !this.hasQueen());
+
+    this.expertSystem.setFactValid("wood_heapHasPheromone", this.lastWoodHeap && this.lastWoodHeap.hasPheromone());
+    this.expertSystem.setFactValid("wood_heapDontHasPheromone", this.lastWoodHeap &&  !this.lastWoodHeap.hasPheromone());
+    this.expertSystem.setFactValid("wood_heapHasQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen());
+    this.expertSystem.setFactValid("wood_heapDontHasQueen", this.lastWoodHeap && !this.lastWoodHeap.hasQueen());
+    this.expertSystem.setFactValid("wood_heapSmallerThanQueen", this.hasQueen() && this.lastWoodHeap && (this.lastWoodHeap.woodCount + 20) < this.getQueen().getPower());
+    this.expertSystem.setFactValid("wood_heapBiggerThanQueen", this.hasQueen() && this.lastWoodHeap && (this.lastWoodHeap.woodCount - 20) > this.getQueen().getPower());
+    this.expertSystem.setFactValid("wood_heapAsBigAsQueen", this.hasQueen() && this.lastWoodHeap && Math.abs(this.lastWoodHeap.woodCount - this.getQueen().getPower()) < 20);
+    this.expertSystem.setFactValid("wood_heapPheromoneNotQueens", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasPheromone() && this.lastWoodHeap.getPheromone().getQueen().id !== this.getQueen().id);
+    this.expertSystem.setFactValid("wood_heapQueenIsQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && this.lastWoodHeap.getQueen().id === this.getQueen().id);
+
+    this.expertSystem.setFactValid("lastTermiteHasQueen", this.lastTermite && this.lastTermite.hasQueen());
+    this.expertSystem.setFactValid("lastTermiteDontHasQueen", this.lastTermite && !this.lastTermite.hasQueen());
+
+    this.expertSystem.setFactValid("queenMorePowerfulThanOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && (this.getQueen().getPower() > (this.lastWoodHeap.getQueen().getPower() + 20)));
+    this.expertSystem.setFactValid("queenLessPowerfulThanOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && ((this.getQueen().getPower() + 20) < this.lastWoodHeap.getQueen().getPower()));
+    this.expertSystem.setFactValid("queenAsPowerfulAsOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && Math.abs(this.getQueen().getPower() - this.lastWoodHeap.getQueen().getPower()) < 20);
+
+    this.expertSystem.setFactValid("queenMorePowerfulThanOtherTermiteQueen", this.hasQueen() && this.lastTermite && this.lastTermite.hasQueen() && (this.getQueen().getPower() > (this.lastTermite.getQueen().getPower() + 20)));
+    this.expertSystem.setFactValid("queenLessPowerfulThanOtherTermiteQueen", this.hasQueen() && this.lastTermite && this.lastTermite.hasQueen() && ((this.getQueen().getPower() + 20) < this.lastTermite.getQueen().getPower()));
+    this.expertSystem.setFactValid("queenAsPowerfulAsOtherTermiteQueen", this.hasQueen() && this.lastTermite && this.lastTermite.hasQueen() && Math.abs(this.getQueen().getPower() - this.lastTermite.getQueen().getPower()) < 20);
+
+    this.expertSystem.setFactValid("sumWithOtherPheromoneIsBiggerThanQueen", this.lastWoodHeap && this.lastWoodHeap.hasPheromone() && (this.lastWoodHeap.woodCount + this.lastWoodHeap.getPheromone().getQueen().getPower()) > this.getQueen().getPower() + 20);
+    this.expertSystem.setFactValid("sumWithOtherPheromoneIsSmallerThanQueen", this.lastWoodHeap && this.lastWoodHeap.hasPheromone() && (this.lastWoodHeap.woodCount + this.lastWoodHeap.getPheromone().getQueen().getPower() + 20) < this.getQueen().getPower());
 };
 
 Termite.prototype.analyze = function() {
@@ -79,17 +170,30 @@ Termite.prototype.analyze = function() {
 
 Termite.prototype.act = function(conclusions) {
 
+    // drop_queen // drop_wood // ally_queen // propagate_queen 
+    // kill_queen // drop_pheromone // back_to_queen // ally_queen
+    // drop_wood // take_wood // 
+
     for (var i in conclusions) {
+
         if (conclusions[i] == "change_direction") {
             this.takeARandomDirection();
-        } else if (conclusions[i] == "drop_wood") {
+        }
+
+        else if (conclusions[i] == "drop_wood") {
             this.lastWoodHeap.addWood();
             this.caryingWood = false;
             this.lastPickUpHeap = this.lastWoodHeap;
-        } else if (conclusions[i] == "take_wood") {
+        }
+
+        else if (conclusions[i] == "take_wood") {
             this.lastWoodHeap.takeWood();
             this.caryingWood = true;
         }
+
+        // else if (conclusions[i] == "drop_queen") {
+        //     this.lastWoodHeap.queen = true;
+        // }
     }
 };
 
@@ -100,10 +204,18 @@ Termite.prototype.draw = function(context) {
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
     context.fill();
     context.stroke();
+
+    if(this.hasQueen() && GLOBAL_DRAW_UMBILICAL) {
+        context.beginPath();
+        context.strokeStyle="rgba(0, 0, 255, .4)";
+        context.moveTo(this.x, this.y);
+        context.lineTo(this.queen.x, this.queen.y);
+        context.stroke();
+    }
 };
 
 Termite.prototype.hasQueen = function() {
-    return this.queen != null;
+    return this.queen !== null;
 };
 
 Termite.prototype.getQueen = function() {
@@ -244,21 +356,22 @@ Termite.prototype.processCollision = function(collidedAgent) {
     }
 
     else if(this.last_hit_type == "termite") {
-        if(collidedAgent.hasQueen()) {
+        this.lastTermite = collidedAgent;
+        if(this.lastTermite.hasQueen()) {
 
             if(this.hasQueen()) {
 
-                if(this.getQueen().getPower() > (collidedAgent.getQueen().getPower() + 20)) {
-                    collidedAgent.setQueen(this.getQueen());
-                } else if((this.getQueen().getPower() + 20) < collidedAgent.getQueen().getPower()) {
-                    this.setQueen(collidedAgent.getQueen());
+                if(this.getQueen().getPower() > (this.lastTermite.getQueen().getPower() + 20)) {
+                    this.lastTermite.setQueen(this.getQueen());
+                } else if((this.getQueen().getPower() + 20) < this.lastTermite.getQueen().getPower()) {
+                    this.setQueen(this.lastTermite.getQueen());
                 }
 
             } else {
-                this.setQueen(collidedAgent.getQueen());
+                this.setQueen(this.lastTermite.getQueen());
             }
         } else if(this.hasQueen()) {
-            collidedAgent.setQueen(this.getQueen());
+            this.lastTermite.setQueen(this.getQueen());
         }
     }
 };
