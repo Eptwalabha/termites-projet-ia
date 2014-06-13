@@ -127,7 +127,7 @@ Termite.prototype.update = function(dt) {
 Termite.prototype.perceive = function() {
 
     this.expertSystem.resetFactValues();
-    this.expertSystem.setFactValid("timer_out", (this.nextChange <= 0));
+    this.expertSystem.setFactValid("timer_out", (this.nextChange !== -99999999 && this.nextChange <= 0));
     this.expertSystem.setFactValid("hit_wall", this.last_hit_type == "wall");
     this.expertSystem.setFactValid("hit_heap", this.last_hit_type == "wood_heap");
     this.expertSystem.setFactValid("hit_termite", this.last_hit_type == "termite");
@@ -151,9 +151,9 @@ Termite.prototype.perceive = function() {
     this.expertSystem.setFactValid("lastTermiteHasQueen", this.lastTermite && this.lastTermite.hasQueen());
     this.expertSystem.setFactValid("lastTermiteDontHasQueen", this.lastTermite && !this.lastTermite.hasQueen());
 
-    this.expertSystem.setFactValid("queenMorePowerfulThanOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && (this.getQueen().getPower() > (this.lastWoodHeap.getQueen().getPower() + 20)));
-    this.expertSystem.setFactValid("queenLessPowerfulThanOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && ((this.getQueen().getPower() + 20) < this.lastWoodHeap.getQueen().getPower()));
-    this.expertSystem.setFactValid("queenAsPowerfulAsOtherWoodHeapQueen", this.lastWoodHeap && this.lastWoodHeap.hasQueen() && Math.abs(this.getQueen().getPower() - this.lastWoodHeap.getQueen().getPower()) < 20);
+    this.expertSystem.setFactValid("queenMorePowerfulThanOtherWoodHeapQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && (this.getQueen().getPower() > (this.lastWoodHeap.getQueen().getPower() + 20)));
+    this.expertSystem.setFactValid("queenLessPowerfulThanOtherWoodHeapQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && ((this.getQueen().getPower() + 20) < this.lastWoodHeap.getQueen().getPower()));
+    this.expertSystem.setFactValid("queenAsPowerfulAsOtherWoodHeapQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && Math.abs(this.getQueen().getPower() - this.lastWoodHeap.getQueen().getPower()) < 20);
 
     this.expertSystem.setFactValid("queenMorePowerfulThanOtherTermiteQueen", this.hasQueen() && this.lastTermite && this.lastTermite.hasQueen() && (this.getQueen().getPower() > (this.lastTermite.getQueen().getPower() + 20)));
     this.expertSystem.setFactValid("queenLessPowerfulThanOtherTermiteQueen", this.hasQueen() && this.lastTermite && this.lastTermite.hasQueen() && ((this.getQueen().getPower() + 20) < this.lastTermite.getQueen().getPower()));
@@ -170,10 +170,6 @@ Termite.prototype.analyze = function() {
 
 Termite.prototype.act = function(conclusions) {
 
-    // drop_queen // drop_wood // ally_queen // propagate_queen 
-    // kill_queen // drop_pheromone // back_to_queen // ally_queen
-    // drop_wood // take_wood // 
-
     for (var i in conclusions) {
 
         if (conclusions[i] == "change_direction") {
@@ -181,20 +177,113 @@ Termite.prototype.act = function(conclusions) {
         }
 
         else if (conclusions[i] == "drop_wood") {
-            this.lastWoodHeap.addWood();
-            this.caryingWood = false;
-            this.lastPickUpHeap = this.lastWoodHeap;
+            this.addWood();
         }
 
         else if (conclusions[i] == "take_wood") {
-            this.lastWoodHeap.takeWood();
-            this.caryingWood = true;
+            this.takeWood();
         }
 
-        // else if (conclusions[i] == "drop_queen") {
-        //     this.lastWoodHeap.queen = true;
-        // }
+        else if (conclusions[i] == "drop_queen") {
+            this.dropQueen();
+        }
+
+        else if (conclusions[i] == "drop_pheromone") {
+            this.dropPheromone();
+        }
+
+        else if (conclusions[i] == "kill_queen") {
+            this.killQueen();
+        }
+
+        else if (conclusions[i] == "back_to_queen") {
+            this.backToQueen();
+        }
+
+        else if (conclusions[i] == "propagate_queen") {
+            this.propagateQueen();
+        }
+
+        else if (conclusions[i] == "ally_queen") {
+            this.allyQueen();
+        }
     }
+};
+
+Termite.prototype.allyQueen = function() {
+    var oldQueen = null;
+    if(this.hasQueen()) {
+        oldQueen = this.queen;
+    }
+
+    if(this.lastWoodHeap.hasQueen()) {
+        this.setQueen(this.lastWoodHeap.getQueen());
+    } else if(this.lastWoodHeap.hasPheromone()) {
+        this.setQueen(this.lastWoodHeap.getPheromone().getQueen());
+    }
+
+    if(oldQueen !== null) {
+        this.queen.informNewAgent(oldQueen);
+    }
+};
+
+Termite.prototype.propagateQueen = function() {
+    this.lastTermite.setQueen(this.getQueen());
+};
+
+Termite.prototype.addWood = function() {
+    this.lastWoodHeap.addWood();
+    this.caryingWood = false;
+    this.lastPickUpHeap = this.lastWoodHeap;
+};
+
+Termite.prototype.takeWood = function() {
+    this.lastWoodHeap.takeWood();
+    this.caryingWood = true;
+};
+
+Termite.prototype.backToQueen = function() {
+    this.destination = {
+        x : this.queen.x,
+        y : this.queen.y
+    };
+
+    this.speed = Math.random() * 150 + 150;
+    this.nextChange = -99999999;
+};
+
+Termite.prototype.killQueen = function() {
+    this.lastWoodHeap.killQueen();
+};
+
+Termite.prototype.dropPheromone = function() {
+     var pheromone = new Pheromone(this.getQueen());
+    world.addAgent(pheromone);
+    this.lastWoodHeap.setPheromone(pheromone);
+};
+
+Termite.prototype.dropQueen = function() {
+    var oldQueen = null;
+    if(this.hasQueen()) {
+        oldQueen = this.queen;
+    }
+
+    this.queen = new Queen(
+        {
+            x: this.lastWoodHeap.x,
+            y: this.lastWoodHeap.y,
+            power: this.lastWoodHeap.woodCount
+        }
+    );
+
+    this.queen.informNewAgent(this);
+
+    if(oldQueen !== null) {
+        this.queen.informNewAgent(oldQueen);
+    }
+
+    this.lastWoodHeap.setQueen(this.queen);
+    world.addAgent(this.queen);
 };
 
 Termite.prototype.draw = function(context) {
@@ -229,150 +318,19 @@ Termite.prototype.setQueen = function(queen) {
 
 Termite.prototype.processCollision = function(collidedAgent) {
 
-    if (collidedAgent == null) {
+    if (collidedAgent === null) {
         this.last_hit_type = "wall";
         return;
     }
 
     this.last_hit_type = collidedAgent.typeId;
 
-    if (this.last_hit_type == "wood_heap") {
+    if (this.last_hit_type === "wood_heap") {
         this.lastWoodHeap = collidedAgent;
-
-        if(!this.lastWoodHeap.hasQueen() && !this.lastWoodHeap.hasPheromone()) {
-
-            if(this.hasQueen()) {
-
-                if(this.lastWoodHeap.woodCount + 20 < this.getQueen().getPower()) {
-                    var pheromone = new Pheromone(this.getQueen());
-                    world.addAgent(pheromone);
-                    this.lastWoodHeap.setPheromone(pheromone);
-                    if (!this.caryingWood){
-                        this.lastWoodHeap.takeWood();
-                        this.caryingWood = true;
-                    }
-
-                    // retourne auprès de sa reine pour l'informer du nouveau tas de bois
-                }
-
-                else if (this.lastWoodHeap.woodCount > this.getQueen().getPower() + 20) {
-
-                    var oldQueen = this.queen;
-
-                    this.queen = new Queen(
-                        {
-                            x: this.lastWoodHeap.x,
-                            y: this.lastWoodHeap.y,
-                            power: this.lastWoodHeap.woodCount
-                        }
-                    );
-
-                    this.queen.informNewAgent(this);
-                    this.queen.informNewAgent(oldQueen);
-
-                    this.lastWoodHeap.setQueen(this.queen);
-                    world.addAgent(this.queen);
-
-                }
-
-            }
-
-            else {
-                this.queen = new Queen(
-                    {
-                        x: this.lastWoodHeap.x,
-                        y: this.lastWoodHeap.y,
-                        power: this.lastWoodHeap.woodCount
-                    }
-                );
-
-                this.queen.informNewAgent(this);
-
-                this.lastWoodHeap.setQueen(this.queen);
-                world.addAgent(this.queen);
-            }
-        }
-
-        else if(this.lastWoodHeap.hasPheromone()) {
-
-            var somme = this.lastWoodHeap.woodCount + this.lastWoodHeap.getPheromone().getQueen().getPower();
-            if(this.hasQueen()){
-                if((this.getQueen().getPower() + 20 ) < somme){
-                    this.setQueen(this.lastWoodHeap.getPheromone().getQueen());
-
-                    //informer nouvelle reine de la position de l'ancienne
-                }
-                else if(this.getQueen().getPower() > (somme + 20)){
-                    var pheromone = new Pheromone(this.getQueen());
-                    world.addAgent(pheromone);
-                    this.lastWoodHeap.setPheromone(pheromone);
-
-                    //retourner auprès de la reine pour l'informer
-                }
-                else{
-                    if (!this.caryingWood){
-                        this.lastWoodHeap.takeWood();
-                        this.caryingWood = true;
-                    }
-                }
-            }
-            else{
-                this.setQueen(this.lastWoodHeap.getPheromone().getQueen());
-            }
-        } 
-
-        else {
-
-            if(!this.queen) {
-
-                this.setQueen(this.lastWoodHeap.getQueen());
-            
-            } else if (this.queen.id !== this.lastWoodHeap.getQueen().id) {
-
-
-                if(this.getQueen().getPower() > (this.lastWoodHeap.getQueen().getPower() + 20)) {
-                    
-                    this.lastWoodHeap.killQueen();
-
-                    // aller informer ma reine du nouveau tas de bois
-
-                    var pheromone = new Pheromone(this.getQueen());
-                    world.addAgent(pheromone);
-                    this.lastWoodHeap.setPheromone(pheromone);
-
-                } else if((this.getQueen().getPower() + 20) < this.lastWoodHeap.getQueen().getPower()) {
-
-                    // jurer fidélité nouvelle reine et informer position ancienne reine
-
-                } else {
-
-                    // prendre bout de bois et retourner informer ma reine
-
-                }
-
-            }
-
-        }
     }
 
-    else if(this.last_hit_type == "termite") {
+    else if(this.last_hit_type === "termite") {
         this.lastTermite = collidedAgent;
-        if(this.lastTermite.hasQueen()) {
-
-            if(this.hasQueen()) {
-
-                if(this.getQueen().getPower() > (this.lastTermite.getQueen().getPower() + 20)) {
-                    this.lastTermite.setQueen(this.getQueen());
-                } else if((this.getQueen().getPower() + 20) < this.lastTermite.getQueen().getPower()) {
-                    this.setQueen(this.lastTermite.getQueen());
-                }
-
-            } else {
-                this.setQueen(this.lastTermite.getQueen());
-            }
-        } else if(this.hasQueen()) {
-            this.lastTermite.setQueen(this.getQueen());
-        }
     }
 };
 
