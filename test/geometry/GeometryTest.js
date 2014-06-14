@@ -17,7 +17,7 @@ GraphTest = TestCase("GeometryTest", {
     "test can return true if two sets of two vertices collide": function() {
         var setA = [new Vertex(0, 0), new Vertex(10, 10)];
         var setB = [new Vertex(5, 5), new Vertex(15, 15)];
-        assertTrue(areTheseBoundingBoxesColliding(setA, setB));
+        assertTrue(areTheseBoundingBoxesCollidingEdge(setA, setB));
     },
 
     "test can return true when two segments intersect": function() {

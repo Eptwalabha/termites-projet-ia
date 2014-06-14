@@ -1,18 +1,72 @@
-var getBoundingBoxFromWall = function(wall) {
+var getPolygonsFromWall = function(wall) {
     var halfWidth = wall.boundingWidth / 2 + 3;
     var halfHeight = wall.boundingHeight / 2 + 3;
-    var bottomLeft = new Vertex(wall.x - halfWidth, wall.y - halfHeight);
-    var bottomRight = new Vertex(wall.x + halfWidth, wall.y - halfHeight);
-    var topRight = new Vertex(wall.x + halfWidth, wall.y + halfHeight);
-    var topLeft = new Vertex(wall.x - halfWidth, wall.y + halfHeight);
+    var bottomLeft = [wall.x - halfWidth, wall.y - halfHeight];
+    var bottomRight = [wall.x + halfWidth, wall.y - halfHeight];
+    var topRight = [wall.x + halfWidth, wall.y + halfHeight];
+    var topLeft = [wall.x - halfWidth, wall.y + halfHeight];
     return [bottomLeft, bottomRight, topRight, topLeft];
 };
 
-var getBoundingBoxFromEdge = function(edge) {
-    var bottomLeft = new Vertex(min(edge.a.x, edge.b.x), min(edge.a.y, edge.b.y));
-    var topRight = new Vertex(max(edge.a.x, edge.b.x), max(edge.a.y, edge.b.y));
+var isPointInWall = function(vertex, wall) {
+    var box = getBoundingBoxFromWall(wall);
+    return vertex.x >= box[0].x && vertex.x <= box[2].x &&
+        vertex.y >= box[0].y && vertex.y <= box[2].y;
+};
+
+var doSegmentIntersectsWithWalls = function(segment, walls) {
+    for (var i in walls) {
+        var polygon = getPolygonsFromWall(walls[i]);
+        if (doSegmentIntersectsPolygon(segment, polygon)) {
+            return true;
+        }
+    }
+    return false;
+};
+
+var doSegmentIntersectsPolygon = function(segment, polygon) {
+
+    var numberOfVertices = polygon.length;
+
+    if (numberOfVertices == 0) {
+        return false;
+    }
+
+    if (numberOfVertices == 1) {
+        return isPointOnLine(segment, polygon[0]);
+    }
+
+    for (var i = 0; i < size - 1; i++) {
+        var segmentOfPolygon = [polygon[i], polygon[i + 1]];
+        if (doSegmentsIntersect(segment, segmentOfPolygon)) {
+            return true;
+        }
+    }
+
+    return true;
+};
+
+var doSegmentsIntersect = function(segmentA, segmentB) {
+
+    var boxA = getBoundingBox(segmentA);
+    var boxB = getBoundingBox(segmentB);
+
+    return areTheseBoundingBoxesColliding(boxA, boxB)
+        && lineSegmentTouchesOrCrossesLine(segmentA, segmentB)
+        && lineSegmentTouchesOrCrossesLine(segmentA, segmentB);
+};
+
+var areTheseBoundingBoxesColliding = function(boxA, boxB) {
+    return boxA[1][0] >= boxB[0][0] && boxA[0][0] <= boxB[1][0] &&
+        boxA[1][1] >= boxB[0][1] && boxA[0][1] <= boxB[1][1];
+};
+
+var getBoundingBox = function(segment) {
+    var bottomLeft = [min(segment[0].x, segment[1].x), min(segment[0].y, segment[1].y)];
+    var topRight = [max(segment[0].x, segment[1].x), max(segment[0].y, segment[1].y)];
     return [bottomLeft, topRight];
 };
+
 
 var max = function (a, b) {
     return (a > b) ? a : b;
@@ -22,55 +76,23 @@ var min = function (a, b) {
     return (a < b) ? a : b;
 };
 
-var isPointInWall = function(vertex, wall) {
-    var box = getBoundingBoxFromWall(wall);
-    return vertex.x >= box[0].x && vertex.x <= box[2].x &&
-        vertex.y >= box[0].y && vertex.y <= box[2].y;
+var lineSegmentTouchesOrCrossesLine = function(segmentA, segmentB) {
+    var temp = isPointRightOfLine(segmentA, segmentB[1]);
+    return isPointOnLine(segmentA, segmentB[0]) || isPointOnLine(segmentA, segmentB[1]) || (isPointRightOfLine(segmentA, segmentB[0]) ? !temp : temp);
 };
 
-var areTheseBoundingBoxesColliding = function(boundingBoxA, boundingBoxB) {
-    return boundingBoxA[1].x >= boundingBoxB[0].x && boundingBoxA[0].x <= boundingBoxB[1].x &&
-        boundingBoxA[1].y >= boundingBoxB[0].y && boundingBoxA[0].y <= boundingBoxB[1].y;
+var isPointOnLine = function(line, point) {
+    var pointA = [line[1][0] - line[0][0], line[1][1] - line[0][1]];
+    var pointB = [point[0] - line[0][0], point[1] - line[0][1]];
+    return Math.abs(crossProduct(pointA, pointB)) < 0.000001;
 };
 
-var lineSegmentTouchesOrCrossesLine = function(edgeA, edgeB) {
-    var temp = isPointRightOfLine(edgeA, edgeB.b);
-    return isPointOnLine(edgeA, edgeB.a) || isPointOnLine(edgeA, edgeB.b) || (isPointRightOfLine(edgeA, edgeB.a) ? !temp : temp);
+var crossProduct = function(pointA, pointB) {
+    return pointA[0] * pointB[1] - pointB[0] * pointA[1];
 };
 
-var doEdgeIntersectsWall = function(edge, wall) {
-    var boxWall = getBoundingBoxFromWall(wall);
-    var bottom = new Edge(boxWall[0], boxWall[1]);
-    var right = new Edge(boxWall[1], boxWall[2]);
-    var top = new Edge(boxWall[2], boxWall[3]);
-    var left = new Edge(boxWall[3], boxWall[0]);
-
-    return doEdgesIntersect(edge, bottom) || doEdgesIntersect(edge, right) ||
-        doEdgesIntersect(edge, top) || doEdgesIntersect(edge, left);
-};
-
-var doEdgesIntersect = function(edgeA, edgeB) {
-    var boxA = getBoundingBoxFromEdge(edgeA);
-    var boxB = getBoundingBoxFromEdge(edgeB);
-
-    return areTheseBoundingBoxesColliding(boxA, boxB)
-        && lineSegmentTouchesOrCrossesLine(edgeA, edgeB)
-        && lineSegmentTouchesOrCrossesLine(edgeB, edgeA);
-};
-
-var isPointOnLine = function(edge, vertex) {
-    var aTmp = new Vertex(edge.b.x - edge.a.x, edge.b.y - edge.a.y);
-    var bTmp = new Vertex(vertex.x - edge.a.x, vertex.y - edge.a.y);
-    var r = crossProduct(aTmp, bTmp);
-    return Math.abs(r) < 0.000001;
-};
-
-var isPointRightOfLine = function(edge, b) {
-    var aTmp = new Vertex(edge.b.x - edge.a.x, edge.b.y - edge.a.y);
-    var bTmp = new Vertex(b.x - edge.a.x, b.y - edge.a.y);
-    return crossProduct(aTmp, bTmp) < 0;
-};
-
-var crossProduct = function(a, b) {
-    return a.x * b.y - b.x * a.y;
+var isPointRightOfLine = function(segment, point) {
+    var pointA = [segment[1][0] - segment[0][0], segment[1][1] - segment[0][1]];
+    var pointB = [point[0] - segment[0][0], point[1] - segment[0][1]];
+    return crossProduct(pointA, pointB) < 0;
 };

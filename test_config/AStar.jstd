@@ -1,0 +1,7 @@
+load:
+  - ../src/js/path_finding/*.js
+  - ../src/js/graph/Vertex.js
+  - ../src/js/graph/Graph.js
+  - ../src/js/graph/Geometry.js
+test:
+  - ../test/algorithme/AStarTest.js

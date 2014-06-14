@@ -4,11 +4,6 @@ Graph = function(){
     this.fitness = {};
 };
 
-Vertex = function(x, y){
-    this.x = x;
-    this.y = y;
-};
-
 Edge = function(a, b) {
     this.a = a;
     this.b = b;
@@ -113,4 +108,24 @@ Edge.prototype.getSquareDist = function() {
     var deltaX = this.a.x - this.b.x;
     var deltaY = this.a.y - this.b.y;
     return deltaX * deltaX + deltaY * deltaY;
+};
+
+Graph.prototype.setConnections = function(walls) {
+
+    for (var vertex in this.vertices) {
+        this.vertices[vertex].neighbourgs = [];
+    }
+
+    var cursor = 0;
+    for (var i = 0, size = this.vertices.length; i < size; i++) {
+        cursor++;
+        var pointA = [this.vertices[i].x, this.vertices[i].y];
+        for (var j = cursor; j < size; j++) {
+            var pointB = [this.vertices[j].x, this.vertices[j].y];
+            if (!doSegmentIntersectsWithWalls([pointA, pointB], walls)) {
+                this.vertices[i].neighbourgs.push(this.vertices[j]);
+                this.vertices[j].neighbourgs.push(this.vertices[i]);
+            }
+        }
+    }
 };
