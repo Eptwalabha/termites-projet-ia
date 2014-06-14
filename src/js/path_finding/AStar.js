@@ -20,26 +20,38 @@ AStar.prototype.setHeuristic = function(vertex) {
 
 AStar.prototype.getPath = function(start, end) {
     this.setHeuristic(end);
+
+    this.openList = [start];
+    start.F = start.heuristic;
+
+    while (this.openList.length > 0) {
+        var vertex = this.getNextVertexToCheck();
+        if (vertex == end) {
+            return this.rebuildPath(end);
+        }
+        this.moveFromOpenToClosedList(vertex);
+        var neighbours = this.getNextVerticesToCheck(vertex);
+        for (var i in neighbours) {
+            var neighbor = neighbours[i];
+            var F = this.calculateF(vertex, neighbor);
+            if (this.openList.indexOf(neighbor) == -1 || neighbor.F == -1 || F < neighbor.F) {
+                neighbor.F = F;
+                neighbor.parent = vertex;
+                if (this.openList.indexOf(neighbor) == -1) {
+                    this.openList.push(neighbor);
+                }
+            }
+        }
+    }
+
     return [];
 };
 
 AStar.prototype.calculateF = function(parent, children) {
-
-    for (var i in children.neighbours) {
-        if (!this.isVertexInClosedList(children.neighbours[i])) {
-            this.openList.push(children.neighbours[i]);
-        }
-    }
-
     var deltaX = parent.x - children.x;
     var deltaY = parent.y - children.y;
 
-    var newF = parent.G + Math.sqrt(deltaX * deltaX + deltaY * deltaY) + children.heuristic;
-
-    if (children.F == -1 || children.F > newF) {
-        children.F = newF;
-        children.parent = parent;
-    }
+    return parent.G + Math.sqrt(deltaX * deltaX + deltaY * deltaY) + children.heuristic;
 };
 
 AStar.prototype.isVertexInClosedList = function(vertex) {
@@ -74,4 +86,26 @@ AStar.prototype.getNextVertexToCheck = function() {
     }
 
     return this.openList[index];
+};
+
+AStar.prototype.rebuildPath = function(vertex) {
+    if (vertex === undefined) {
+        return [];
+    }
+    if (vertex.parent === undefined || vertex.parent == null) {
+        return [vertex];
+    }
+    var path = this.rebuildPath(vertex.parent);
+    path.push(vertex);
+    return path;
+};
+
+AStar.prototype.moveFromOpenToClosedList = function(vertex) {
+
+    var index = this.openList.indexOf(vertex);
+    if (index == -1) {
+        return;
+    }
+    this.openList.splice(index, 1);
+    this.closedList.push(vertex);
 };

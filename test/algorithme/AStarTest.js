@@ -53,40 +53,8 @@ GraphTest = TestCase("A *", {
         this.vertexB.setPosition(3, 0);
         this.vertexA.G = 1;
         this.vertexB.heuristic = 20;
-        this.aStar.calculateF(this.vertexA, this.vertexB);
-        assertEquals(((1 + 3) + 20), this.vertexB.F);
-    },
-
-    "test A* set the parent when calculate F": function() {
-        this.aStar.calculateF(this.vertexA, this.vertexB);
-        assertEquals(this.vertexA, this.vertexB.parent);
-    },
-
-    "test a vertex can changes its parent and its score if it gets better": function() {
-        this.vertexB.parent = null;
-        this.vertexB.F = 9001;
-        this.vertexB.heuristic = 20;
-        this.vertexA.G = 1;
-        this.aStar.calculateF(this.vertexA, this.vertexB);
-        assertEquals(this.vertexA, this.vertexB.parent);
-    },
-
-    "test a vertex does not change its parent nor its score if the new score is worth": function() {
-        var parent = new Vertex(0, 0);
-        this.vertexB.parent = parent;
-        this.vertexB.F = 1;
-        this.vertexB.heuristic = 1;
-        this.vertexA.G = 9001;
-        this.aStar.calculateF(this.vertexA, this.vertexB);
-        assertNotEquals(this.vertexA, this.vertexB.parent);
-        assertEquals(parent, this.vertexB.parent);
-        assertEquals(1, this.vertexB.F);
-    },
-
-    "test neighbours of a vertex go in the open list when the vertex is checked": function() {
-        this.vertexA.neighbours = [this.vertexB];
-        this.aStar.calculateF(new Vertex(0, 0), this.vertexA);
-        assertEquals(1, this.aStar.openList.length);
+        var F = this.aStar.calculateF(this.vertexA, this.vertexB);
+        assertEquals(((1 + 3) + 20), F);
     },
 
     "test a vertex already in the closed list is not added to the open list": function() {
@@ -103,7 +71,7 @@ GraphTest = TestCase("A *", {
         assertEquals(this.vertexA, neighbours[0]);
     },
 
-    "test A* selects the next best vertex to check in the open list": function() {
+    "test A* selects the next best vertex to check from the open list": function() {
         this.vertexA.F = 20;
         this.vertexB.F = 10;
         var vertexC = new Vertex(0, 0);
@@ -112,10 +80,37 @@ GraphTest = TestCase("A *", {
         assertEquals(vertexC, this.aStar.getNextVertexToCheck());
     },
 
+    "test A* can moves a vertex from the open list to the closed list": function() {
+        this.aStar.openList = [new Vertex(0, 1), this.vertexA, this.vertexB];
+        this.aStar.closedList = [];
+        this.aStar.moveFromOpenToClosedList(this.vertexA);
+        assertEquals(1, this.aStar.closedList.length);
+        assertEquals(this.vertexA, this.aStar.closedList[0]);
+        assertEquals(2, this.aStar.openList.length);
+        assertEquals(-1, this.aStar.openList.indexOf(this.vertexA));
+    },
+
     "test A* omits vertices that are already in the closed list when it retrieves neighbours": function() {
         this.aStar.closedList = [this.vertexA];
         this.vertexB.neighbours = [this.vertexA];
         assertEquals([], this.aStar.getNextVerticesToCheck(this.vertexB));
+    },
+
+    "test A* returns null when the open list is empty (no path)": function() {
+        this.aStar.openList = [];
+        assertNull(this.aStar.getNextVertexToCheck());
+    },
+
+    "test A* can rebuild the path": function() {
+        var vertexC = new Vertex(10, 10);
+        this.vertexA.parent = null;
+        this.vertexB.parent = this.vertexA;
+        vertexC.parent = this.vertexB;
+
+        var path = this.aStar.rebuildPath(vertexC);
+        assertEquals(this.vertexA, path[0]);
+        assertEquals(this.vertexB, path[1]);
+        assertEquals(vertexC, path[2]);
     },
 
     "test A* can return a path from point A to point B": function() {
@@ -124,8 +119,8 @@ GraphTest = TestCase("A *", {
         this.vertexB.neighbours = [vertexC];
         this.aStar.vertices = [this.vertexA, this.vertexB, vertexC];
         var path = this.aStar.getPath(this.vertexA, vertexC);
-//        assertEquals(this.vertexA, path[0]);
-//        assertEquals(this.vertexB, path[1]);
-//        assertEquals(this.vertexC, path[2]);
+        assertEquals(this.vertexA, path[0]);
+        assertEquals(this.vertexB, path[1]);
+        assertEquals(vertexC, path[2]);
     }
 });
