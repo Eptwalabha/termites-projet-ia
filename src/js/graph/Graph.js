@@ -113,7 +113,7 @@ Edge.prototype.getSquareDist = function() {
 Graph.prototype.setConnections = function(walls) {
 
     for (var vertex in this.vertices) {
-        this.vertices[vertex].neighbourgs = [];
+        this.vertices[vertex].neighbours = [];
     }
 
     var cursor = 0;
@@ -123,8 +123,8 @@ Graph.prototype.setConnections = function(walls) {
         for (var j = cursor; j < size; j++) {
             var pointB = [this.vertices[j].x, this.vertices[j].y];
             if (!doSegmentIntersectsWithWalls([pointA, pointB], walls)) {
-                this.vertices[i].neighbourgs.push(this.vertices[j]);
-                this.vertices[j].neighbourgs.push(this.vertices[i]);
+                this.vertices[i].neighbours.push(this.vertices[j]);
+                this.vertices[j].neighbours.push(this.vertices[i]);
             }
         }
     }
