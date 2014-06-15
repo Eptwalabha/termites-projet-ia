@@ -48,20 +48,12 @@ GraphTest = TestCase("A *", {
         assertEquals(0, this.vertexB.heuristic);
     },
 
-    "test A* can calculate F between two vertices": function() {
+    "test A* can calculate G between two vertices": function() {
         this.vertexA.setPosition(0, 0);
         this.vertexB.setPosition(3, 0);
         this.vertexA.G = 1;
-        this.vertexB.heuristic = 20;
-        var F = this.aStar.computeF(this.vertexA, this.vertexB);
-        assertEquals(((1 + 3) + 20), F);
-    },
-
-    "test a vertex already in the closed list is not added to the open list": function() {
-        this.vertexA.neighbours = [this.vertexB];
-        this.aStar.closedList = [this.vertexB];
-        this.aStar.computeF(new Vertex(0, 0), this.vertexA);
-        assertEquals(0, this.aStar.openList.length);
+        var G = this.aStar.computeG(this.vertexA, this.vertexB);
+        assertEquals((1 + 3), G);
     },
 
     "test A* can retrieves all the neighbours of a vertex": function() {
@@ -122,5 +114,59 @@ GraphTest = TestCase("A *", {
         assertEquals(this.vertexA, path[0]);
         assertEquals(this.vertexB, path[1]);
         assertEquals(vertexC, path[2]);
+    },
+
+    "test A* works with real situation": function() {
+
+        var a = new Vertex(4, 9);
+        var b = new Vertex(4, 5);
+        var c = new Vertex(8, 7);
+        var d = new Vertex(8, 2);
+        var e = new Vertex(6, 3);
+        var f = new Vertex(2, 1);
+
+        a.neighbours = [b, c];
+        b.neighbours = [a, f];
+        c.neighbours = [a, d, e];
+        d.neighbours = [e, c, f];
+        e.neighbours = [c, d];
+        f.neighbours = [b, d];
+
+        this.aStar.vertices = [a, b, c, d, e, f];
+
+        var path = this.aStar.getPath(b, e);
+
+        assertEquals(b, path[0]);
+        assertEquals(f, path[1]);
+        assertEquals(d, path[2]);
+        assertEquals(e, path[3]);
+    },
+
+
+    "test A* select the shortest path": function() {
+
+        var a = new Vertex(0, 0);
+        var b = new Vertex(50, 50);
+        var c = new Vertex(25, 0);
+        var d = new Vertex(50, 0);
+        var e = new Vertex(75, 0);
+        var f = new Vertex(100, 0);
+
+        a.neighbours = [b, c];
+        b.neighbours = [a, e];
+        c.neighbours = [a, d];
+        d.neighbours = [c, e];
+        e.neighbours = [d, f];
+        f.neighbours = [b, a];
+
+        this.aStar.vertices = [a, b, c, d, e, f];
+
+        var path = this.aStar.getPath(a, f);
+
+        assertEquals(a, path[0]);
+        assertEquals(c, path[1]);
+        assertEquals(d, path[2]);
+        assertEquals(e, path[3]);
+        assertEquals(f, path[4]);
     }
 });

@@ -8,43 +8,62 @@ AStar.prototype.setHeuristic = function(vertex) {
     for (var i in this.vertices) {
         var deltaX = vertex.x - this.vertices[i].x;
         var deltaY = vertex.y - this.vertices[i].y;
+        this.vertices[i].F = -1;
+        this.vertices[i].G = 0;
         this.vertices[i].heuristic = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+//        // manhattan heuristic
+//        this.vertices[i].heuristic = Math.abs(deltaX) + Math.abs(deltaY);
     }
 };
 
-AStar.prototype.getPath = function(start, end) {
-    this.setHeuristic(end);
+AStar.prototype.getPath = function(start, goal) {
+    this.setHeuristic(goal);
 
     this.openList = [start];
+    this.closedList = [];
     start.F = start.heuristic;
+    start.G = 0;
+    var shortestDistance = -1;
 
     while (this.openList.length > 0) {
         var vertex = this.getNextVertexToCheck();
-        if (vertex == end) {
-            return this.rebuildPath(end);
+
+        if (shortestDistance != -1 && vertex.G > shortestDistance) {
+            break;
         }
+
         this.moveFromOpenToClosedList(vertex);
         var neighbours = this.getVertexNeighbours(vertex);
         for (var i in neighbours) {
             var neighbor = neighbours[i];
-            var F = this.computeF(vertex, neighbor);
+            var G = this.computeG(vertex, neighbor);
+            var F = G + neighbor.heuristic;
             if (!this.isVertexInOpenList(neighbor) || neighbor.F == -1 || F < neighbor.F) {
                 neighbor.F = F;
+                neighbor.G = G;
                 neighbor.parent = vertex;
                 if (!this.isVertexInOpenList(neighbor)) {
                     this.openList.push(neighbor);
                 }
             }
+            if (neighbor == goal) {
+                if (shortestDistance == -1 || shortestDistance > G) {
+                    shortestDistance = G;
+                }
+            }
         }
     }
 
+    if (shortestDistance != -1) {
+        return this.rebuildPath(goal);
+    }
     return [];
 };
 
-AStar.prototype.computeF = function(parent, children) {
+AStar.prototype.computeG = function(parent, children) {
     var deltaX = parent.x - children.x;
     var deltaY = parent.y - children.y;
-    return parent.G + Math.sqrt(deltaX * deltaX + deltaY * deltaY) + children.heuristic;
+    return parent.G + Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 };
 
 AStar.prototype.isVertexInClosedList = function(vertex) {

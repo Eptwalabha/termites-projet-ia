@@ -42,6 +42,8 @@ Graph.prototype.draw = function(context) {
         vertex = this.vertices[i];
 
         context.strokeStyle="#00F";
+        context.globalAlpha = 0.1;
+
         for (var j in vertex.neighbours) {
             neighbor = vertex.neighbours[j];
             context.beginPath();
@@ -51,6 +53,7 @@ Graph.prototype.draw = function(context) {
         }
 
         context.strokeStyle="#F00";
+        context.globalAlpha = 1;
         context.beginPath();
         context.arc(vertex.x, vertex.y, 4, 0, 2*Math.PI);
         context.stroke();

@@ -11,6 +11,7 @@
     <script type="text/javascript" src="../js/graph/Geometry.js"></script>
     <script type="text/javascript" src="../js/graph/Vertex.js"></script>
     <script type="text/javascript" src="../js/graph/Graph.js"></script>
+    <script type="text/javascript" src="../js/path_finding/AStar.js"></script>
     <script>
 
         var world = null;
@@ -18,10 +19,12 @@
         var canvasContext = null;
         var speed = 1;
         var graph = new Graph();
+        var aStart = new AStar();
         var mainLoop = null;
         var lastUpdate = Date.now();
         var dt = 0;
         var wallList = [];
+        var mouseVertex = [0, 0];
 
         function updateTime() {
             var now = Date.now();
@@ -33,13 +36,61 @@
             updateTime();
             world.update(dt * speed);
             canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            aStart.vertices = graph.vertices;
+            var closestVertex = getClosestVertex(graph.vertices, mouseVertex[0], mouseVertex[1]);
+            var path = aStart.getPath(graph.vertices[0], closestVertex);
             world.draw(canvasContext);
             graph.draw(canvasContext);
+            drawPath(path);
+        }
+
+        function getClosestVertex(vertices, mouseX, mouseY) {
+
+            var index = 0;
+            var dist = -1;
+            var newDist, deltaX, deltaY;
+
+            for (var i in vertices) {
+                var vertex = vertices[i];
+                deltaX = vertex.x - mouseX;
+                deltaY = vertex.y - mouseY;
+                newDist = deltaX * deltaX + deltaY * deltaY;
+                if (dist == -1 || newDist < dist) {
+                    dist = newDist;
+                    index = i;
+                }
+            }
+
+            return vertices[index];
+        }
+
+        function drawPath(path) {
+
+            canvasContext.lineWidth = 4;
+            for (var i = 0, size = path.length - 1; i < size; i++) {
+                var vertexA = path[i];
+                var vertexB = path[i + 1];
+
+                canvasContext.strokeStyle = "#F80";
+
+                canvasContext.beginPath();
+                canvasContext.moveTo(vertexA.x, vertexA.y);
+                canvasContext.lineTo(vertexB.x, vertexB.y);
+                canvasContext.stroke();
+            }
+            canvasContext.lineWidth = 1;
+            canvasContext.globalAlpha = 1;
         }
 
         function init() {
+
             canvasElement = document.getElementById("canvas");
             canvasContext = this.canvasElement.getContext("2d");
+
+            canvasElement.addEventListener('mousemove', function(evt) {
+                var rect = canvasElement.getBoundingClientRect();
+                mouseVertex = [evt.clientX - rect.left, evt.clientY - rect.top];
+            }, false);
 
             world = new World(canvasElement.width, canvasElement.height);
 
@@ -51,12 +102,20 @@
             }
 
             var time = new Date().getTime();
-            graph.randomize(wallList, canvasElement);
+//            graph.randomize(wallList, canvasElement);
+            graph.randomizeVertices(50, canvasElement.width, canvasElement.height, wallList);
+            graph.setConnections(wallList);
+
             console.log("init time = " + (new Date().getTime() - time) + "ms");
+
+            aStart.vertices = graph.vertices;
+            var path = aStart.getPath(graph.vertices[0], graph.vertices[19]);
+            console.log(path);
 
             var fps = 120;
             mainLoop = setInterval(update, 1000 / fps);
         }
+
 
     </script>
 </head>
