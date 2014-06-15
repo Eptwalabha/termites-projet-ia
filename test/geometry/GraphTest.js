@@ -14,12 +14,6 @@ GraphTest = TestCase("GraphTest", {
         assertEquals(5, vertex.y);
     },
 
-    "test an edge is a set of two vertices": function() {
-        var edge = new Edge(new Vertex(0, 1), new Vertex(2, 3));
-        assertTrue(edge.a instanceof Vertex);
-        assertTrue(edge.b instanceof Vertex);
-    },
-
     "test a vertex can be added to a graph": function() {
         this.graph.addVertex(new Vertex(2, 3));
         var vertices = this.graph.vertices;
@@ -28,32 +22,18 @@ GraphTest = TestCase("GraphTest", {
         assertEquals(3, vertices[0].y);
     },
 
-    "test two vertices can generate an edge": function() {
+    "test can connect two vertices together": function() {
         var vertexA = new Vertex(0, 1);
         var vertexB = new Vertex(2, 3);
         this.graph.vertices = [vertexA, vertexB];
-        this.graph.generateEdges();
-        assertEquals(1, this.graph.edges.length);
-        assertEquals(vertexA, this.graph.edges[0].a);
-        assertEquals(vertexB, this.graph.edges[0].b);
+        this.graph.setConnections([]);
+        assertEquals(vertexB, vertexA.neighbours[0]);
+        assertEquals(vertexA, vertexB.neighbours[0]);
     },
 
-    "test a wall intersect a segment": function() {
-        var vertexA = new Vertex(0, 10);
-        var vertexB = new Vertex(0, 10);
+    "test can return true if segment intersects a wall": function() {
         var wall = new Wall();
         wall.setDimension(5, 10);
-
-    },
-
-    "test don't generate an edge who intersects a wall": function() {
-//        var wall = new Wall();
-//        wall.setDimension(5, 10);
-//        wall.moveTo(0, 0);
-//        this.graph.wallList = [wall];
-//        this.graph.vertices = [new Vertex(0, 10), new Vertex(0, -10)]
-//        this.graph.generateEdges();
-//        assertEquals(0, this.graph.edges.length);
+        assertTrue(doSegmentIntersectsWithWalls([[0, 10], [0, -10]], wall));
     }
-
 });

@@ -9,6 +9,7 @@
     <script type="text/javascript" src="../js/agent.js"></script>
     <script type="text/javascript" src="../js/wall.js"></script>
     <script type="text/javascript" src="../js/graph/Geometry.js"></script>
+    <script type="text/javascript" src="../js/graph/Vertex.js"></script>
     <script type="text/javascript" src="../js/graph/Graph.js"></script>
     <script>
 
@@ -51,28 +52,12 @@
 
             var time = new Date().getTime();
             graph.randomize(wallList, canvasElement);
-            console.log("init time = " + (new Date().getTime() - time) + "ms, counter = " + counter);
+            console.log("init time = " + (new Date().getTime() - time) + "ms");
 
             var fps = 120;
             mainLoop = setInterval(update, 1000 / fps);
         }
 
-
-        var edgeList = [];
-
-        var time = new Date().getTime();
-        var counter = 0;
-        for (var x = 0; x < 50 * 20; x++) {
-            for (var i = 0; i < 20; i++) {
-                var edge = new Edge(new Vertex(0, 10), new Vertex(20, 10));
-                for (var j = 0, size = wallList.length; j < size; j++) {
-                    doEdgeIntersectsWall(edge, wallList[j]);
-                    counter++;
-                }
-            }
-        }
-
-        console.log("time = " + (new Date().getTime() - time) + "ms, counter = " + counter);
     </script>
 </head>
 <body onload="init()">

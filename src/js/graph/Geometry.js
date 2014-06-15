@@ -9,9 +9,11 @@ var getPolygonsFromWall = function(wall) {
 };
 
 var isPointInWall = function(vertex, wall) {
-    var box = getBoundingBoxFromWall(wall);
-    return vertex.x >= box[0].x && vertex.x <= box[2].x &&
-        vertex.y >= box[0].y && vertex.y <= box[2].y;
+    var vertices = getPolygonsFromWall(wall);
+    var bottomLeft = vertices[0];
+    var topRight = vertices[2];
+    return vertex[0] >= bottomLeft[0] && vertex[0] <= topRight[0] &&
+        vertex[1] >= bottomLeft[1] && vertex[1] <= topRight[1];
 };
 
 var doSegmentIntersectsWithWalls = function(segment, walls) {
@@ -25,25 +27,18 @@ var doSegmentIntersectsWithWalls = function(segment, walls) {
 };
 
 var doSegmentIntersectsPolygon = function(segment, polygon) {
-
     var numberOfVertices = polygon.length;
-
-    if (numberOfVertices == 0) {
+    if (numberOfVertices < 1) {
         return false;
     }
-
-    if (numberOfVertices == 1) {
-        return isPointOnLine(segment, polygon[0]);
-    }
-
-    for (var i = 0; i < size - 1; i++) {
-        var segmentOfPolygon = [polygon[i], polygon[i + 1]];
+    for (var i = 0; i < numberOfVertices; i++) {
+        var next = (i + 1) % numberOfVertices;
+        var segmentOfPolygon = [polygon[i], polygon[next]];
         if (doSegmentsIntersect(segment, segmentOfPolygon)) {
             return true;
         }
     }
-
-    return true;
+    return false;
 };
 
 var doSegmentsIntersect = function(segmentA, segmentB) {
@@ -53,7 +48,7 @@ var doSegmentsIntersect = function(segmentA, segmentB) {
 
     return areTheseBoundingBoxesColliding(boxA, boxB)
         && lineSegmentTouchesOrCrossesLine(segmentA, segmentB)
-        && lineSegmentTouchesOrCrossesLine(segmentA, segmentB);
+        && lineSegmentTouchesOrCrossesLine(segmentB, segmentA);
 };
 
 var areTheseBoundingBoxesColliding = function(boxA, boxB) {
@@ -62,11 +57,10 @@ var areTheseBoundingBoxesColliding = function(boxA, boxB) {
 };
 
 var getBoundingBox = function(segment) {
-    var bottomLeft = [min(segment[0].x, segment[1].x), min(segment[0].y, segment[1].y)];
-    var topRight = [max(segment[0].x, segment[1].x), max(segment[0].y, segment[1].y)];
+    var bottomLeft = [min(segment[0][0], segment[1][0]), min(segment[0][1], segment[1][1])];
+    var topRight = [max(segment[0][0], segment[1][0]), max(segment[0][1], segment[1][1])];
     return [bottomLeft, topRight];
 };
-
 
 var max = function (a, b) {
     return (a > b) ? a : b;

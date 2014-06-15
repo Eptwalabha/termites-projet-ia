@@ -1,5 +1,7 @@
 load:
-  - ../src/js/graph/*.js
+  - ../src/js/graph/Graph.js
+  - ../src/js/graph/Vertex.js
+  - ../src/js/graph/Geometry.js
   - ../src/js/constants.js
   - ../src/js/agent.js
   - ../src/js/wall.js

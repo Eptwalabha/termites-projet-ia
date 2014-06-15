@@ -2,6 +2,7 @@ load:
   - ../src/js/graph/*.js
   - ../src/js/common/*.js
   - ../src/js/expert_system/*.js
+  - ../src/js/path_finding/AStar.js
   - ../src/js/constants.js
   - ../src/js/agent.js
   - ../src/js/queen.js

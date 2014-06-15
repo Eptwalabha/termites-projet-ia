@@ -1,14 +1,8 @@
 function AStar() {
     this.vertices = null;
-    this.start = null;
     this.openList = [];
     this.closedList = [];
 }
-
-AStar.prototype.setup = function(vertices, start) {
-    this.vertices = vertices;
-    this.start = start;
-};
 
 AStar.prototype.setHeuristic = function(vertex) {
     for (var i in this.vertices) {
@@ -30,14 +24,14 @@ AStar.prototype.getPath = function(start, end) {
             return this.rebuildPath(end);
         }
         this.moveFromOpenToClosedList(vertex);
-        var neighbours = this.getNextVerticesToCheck(vertex);
+        var neighbours = this.getVertexNeighbours(vertex);
         for (var i in neighbours) {
             var neighbor = neighbours[i];
-            var F = this.calculateF(vertex, neighbor);
-            if (this.openList.indexOf(neighbor) == -1 || neighbor.F == -1 || F < neighbor.F) {
+            var F = this.computeF(vertex, neighbor);
+            if (!this.isVertexInOpenList(neighbor) || neighbor.F == -1 || F < neighbor.F) {
                 neighbor.F = F;
                 neighbor.parent = vertex;
-                if (this.openList.indexOf(neighbor) == -1) {
+                if (!this.isVertexInOpenList(neighbor)) {
                     this.openList.push(neighbor);
                 }
             }
@@ -47,10 +41,9 @@ AStar.prototype.getPath = function(start, end) {
     return [];
 };
 
-AStar.prototype.calculateF = function(parent, children) {
+AStar.prototype.computeF = function(parent, children) {
     var deltaX = parent.x - children.x;
     var deltaY = parent.y - children.y;
-
     return parent.G + Math.sqrt(deltaX * deltaX + deltaY * deltaY) + children.heuristic;
 };
 
@@ -58,12 +51,17 @@ AStar.prototype.isVertexInClosedList = function(vertex) {
     return this.closedList.indexOf(vertex) != -1;
 };
 
-AStar.prototype.getNextVerticesToCheck = function(vertex) {
+AStar.prototype.isVertexInOpenList = function(vertex) {
+    return this.openList.indexOf(vertex) != -1;
+};
+
+AStar.prototype.getVertexNeighbours = function(vertex) {
     var nextVerticesToCheck = [];
 
     for (var i in vertex.neighbours) {
-        if (!this.isVertexInClosedList(vertex.neighbours[i])) {
-            nextVerticesToCheck.push(vertex.neighbours[i]);
+        var neighbor = vertex.neighbours[i];
+        if (!this.isVertexInClosedList(neighbor)) {
+            nextVerticesToCheck.push(neighbor);
         }
     }
     return nextVerticesToCheck;

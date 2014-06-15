@@ -53,20 +53,20 @@ GraphTest = TestCase("A *", {
         this.vertexB.setPosition(3, 0);
         this.vertexA.G = 1;
         this.vertexB.heuristic = 20;
-        var F = this.aStar.calculateF(this.vertexA, this.vertexB);
+        var F = this.aStar.computeF(this.vertexA, this.vertexB);
         assertEquals(((1 + 3) + 20), F);
     },
 
     "test a vertex already in the closed list is not added to the open list": function() {
         this.vertexA.neighbours = [this.vertexB];
         this.aStar.closedList = [this.vertexB];
-        this.aStar.calculateF(new Vertex(0, 0), this.vertexA);
+        this.aStar.computeF(new Vertex(0, 0), this.vertexA);
         assertEquals(0, this.aStar.openList.length);
     },
 
     "test A* can retrieves all the neighbours of a vertex": function() {
         this.vertexB.neighbours = [this.vertexA];
-        var neighbours = this.aStar.getNextVerticesToCheck(this.vertexB);
+        var neighbours = this.aStar.getVertexNeighbours(this.vertexB);
         assertArray(neighbours);
         assertEquals(this.vertexA, neighbours[0]);
     },
@@ -93,7 +93,7 @@ GraphTest = TestCase("A *", {
     "test A* omits vertices that are already in the closed list when it retrieves neighbours": function() {
         this.aStar.closedList = [this.vertexA];
         this.vertexB.neighbours = [this.vertexA];
-        assertEquals([], this.aStar.getNextVerticesToCheck(this.vertexB));
+        assertEquals([], this.aStar.getVertexNeighbours(this.vertexB));
     },
 
     "test A* returns null when the open list is empty (no path)": function() {
