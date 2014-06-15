@@ -4,7 +4,7 @@ function Rule(goal, premises) {
 }
 
 Rule.prototype.isValid = function() {
-	for(index in this.premises) {
+	for(index=0; index < this.premises.length; ++index) {
 		var premise = this.premises[index];
 		if(!premise.isValid()) {
 			return false;
@@ -23,7 +23,7 @@ RuleBase.prototype.addRule = function(rule) {
 
 RuleBase.prototype.primaryGoals = function() {
 	var primaryGoals = [];
-	for(ruleIndex in this.rules) {
+	for(var ruleIndex= 0 ; ruleIndex < this.rules.length; ++ruleIndex) {
 		var rule = this.rules[ruleIndex];
 		if(!this.isPremise(rule.goal.label)) {
 			primaryGoals.push(rule.goal.label);
@@ -35,7 +35,7 @@ RuleBase.prototype.primaryGoals = function() {
 RuleBase.prototype.initialPremises = function(goalLabel, result) {
 	if(result == undefined) result = [];
 
-	for(index in result) {
+	for(var index=0; index < result.length; ++index) {
 		if(result[index] == goalLabel) {
 			return;
 		}
@@ -45,9 +45,9 @@ RuleBase.prototype.initialPremises = function(goalLabel, result) {
 	if(rules.length == 0) {
 		result.push(goalLabel);
 	} else {
-		for(ruleIndex in rules) {
+		for(var ruleIndex=0; ruleIndex < rules.length; ++ ruleIndex) {
 			var rule = rules[ruleIndex];
-			for(premiseIndex in rule.premises) {
+			for(var premiseIndex=0; premiseIndex < rule.premises.length; ++premiseIndex) {
 				var premise = rule.premises[premiseIndex];
 				this.initialPremises(premise.label, result);
 			}
@@ -58,9 +58,9 @@ RuleBase.prototype.initialPremises = function(goalLabel, result) {
 };
 
 RuleBase.prototype.isPremise = function(label) {
-	for(ruleIndex in this.rules) {
+	for(var ruleIndex=0; ruleIndex < this.rules.length) {
 		var rule = this.rules[ruleIndex];
-		for(var premiseIndex in rule.premises) {
+		for(var premiseIndex=0; premiseIndex < rule.premises.length; ++premiseIndex) {
 			var premise = rule.premises[premiseIndex];
 			if(premise.label == label) {
 				return true;
@@ -68,11 +68,11 @@ RuleBase.prototype.isPremise = function(label) {
 		}
 	}
 	return false;
-}
+};
 
 RuleBase.prototype.rulesWithGoal = function(label) {
 	var result = [];
-	for(ruleIndex in this.rules) {
+	for(var ruleIndex=0; ruleIndex < this.rules.length; ++ruleIndex) {
 		var rule = this.rules[ruleIndex];
 		if(rule.goal.label == label) {
 			result.push(rule);

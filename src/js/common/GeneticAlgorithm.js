@@ -68,7 +68,7 @@ GeneticAlgorithm.prototype.generateRandomGraph = function(queen) {
     var knownWalls = queen.knownWalls;
 
     var graph = new Graph();
-    for (var i in knownWoodHeap) {
+    for (var i= 0; i < knownWoodHeap.length; ++i) {
         graph.vertices.push(new Vertex(knownWoodHeap[i].x, knownWoodHeap[i].y));
     }
 
@@ -77,7 +77,7 @@ GeneticAlgorithm.prototype.generateRandomGraph = function(queen) {
         var vertex = new Vertex(Math.random() * 600, Math.random() * 600);
 
         var collide = false;
-        for (var j in knownWalls) {
+        for (var j=0; j < knownWalls.length; ++j) {
             if (isPointInWall(vertex, knownWalls[j])) {
                 collide = true;
                 break;

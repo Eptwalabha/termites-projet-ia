@@ -38,13 +38,13 @@ Graph.prototype.randomize = function(walls, canvasElement) {
 Graph.prototype.draw = function(context) {
 
     var vertex, neighbor;
-    for (var i in this.vertices) {
+    for (var i=0; i < this.vertices.length; ++i) {
         vertex = this.vertices[i];
 
         context.strokeStyle="#00F";
         context.globalAlpha = 0.1;
 
-        for (var j in vertex.neighbours) {
+        for (var j=0; j < vertex.neighbours.length; ++j) {
             neighbor = vertex.neighbours[j];
             context.beginPath();
             context.moveTo(vertex.x, vertex.y);
@@ -78,7 +78,7 @@ Graph.prototype.getSquareDist = function(pointA, pointB) {
 
 Graph.prototype.setConnections = function(walls) {
 
-    for (var vertex in this.vertices) {
+    for (var vertex=0; vertex < this.vertices.length; ++vertex) {
         this.vertices[vertex].neighbours = [];
     }
 

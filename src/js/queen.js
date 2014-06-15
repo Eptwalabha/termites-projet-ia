@@ -18,15 +18,24 @@ function Queen(params) {
 }
 
 Queen.prototype.informNewAgent = function(agent) {
-	
+    this.knownAgents[agent.id] = agent;
+};
+
+Queen.prototype.updateGraphAndStrategy = function () {
+    this.generateGraph();
+    this.updateStrategy();
 };
 
 Queen.prototype.generateGraph = function() {
-	
+
+};
+
+Queen.prototype.updateStrategy = function () {
+
 };
 
 Queen.prototype.giveNewTask = function() {
-	
+
 };
 
 Queen.prototype.setPower = function(power) {
@@ -38,11 +47,27 @@ Queen.prototype.getPower = function() {
 };
 
 Queen.prototype.initExpertSystem = function() {
-    // this.expertSystem.addRule("change_direction", ["timer_out"]);
-    // this.expertSystem.addRule("change_direction", ["hit_wall"]);
-    // this.expertSystem.addRule("change_direction", ["hit_heap"]);
-    // this.expertSystem.addRule("drop_wood", ["hit_heap", "charged", "different_heap"]);
-    // this.expertSystem.addRule("take_wood", ["hit_heap", "uncharged"]);
+    // Une reine qui reçoit de nouvelles informations va mettre à jour
+    // son graphe de déplacement et modifier la stratégie de sa termitière.
+    this.expertSystem.addRule("update_graph_and_strategy", ["meet_termite", "new_wood_heap_or_new_wall"]);
+
+    // Une reine qui reçoit une demande de travail, va se charger de fournir au demandeur d’emploi une destination
+    // (correspondant à une zone à explorer ou un tas de bois à collecter).
+    this.expertSystem.addRule("give_new_task", ["meet_termite","termite_asked_for_work"]);
+};
+Queen.prototype.analyze = function() {
+    return this.expertSystem.inferForward();
+};
+Queen.prototype.act = function(conclusions) {
+    for(var i=0; i < conclusions.length; ++i ) {
+        if(conclusions[i] == "update_graph_and_strategy") {
+            this.updateGraphAndStrategy();
+        }
+
+        else if(conclusions[i] == "give_new_task") {
+            this.giveNewTask();
+        }
+    }
 };
 
 Queen.prototype.draw = function(context) {

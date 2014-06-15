@@ -17,7 +17,7 @@ var isPointInWall = function(vertex, wall) {
 };
 
 var doSegmentIntersectsWithWalls = function(segment, walls) {
-    for (var i in walls) {
+    for (var i=0; i < walls.length; ++i) {
         var polygon = getPolygonsFromWall(walls[i]);
         if (doSegmentIntersectsPolygon(segment, polygon)) {
             return true;
@@ -31,7 +31,7 @@ var doSegmentIntersectsPolygon = function(segment, polygon) {
     if (numberOfVertices < 1) {
         return false;
     }
-    for (var i = 0; i < numberOfVertices; i++) {
+    for (var i=0; i < numberOfVertices; ++i) {
         var next = (i + 1) % numberOfVertices;
         var segmentOfPolygon = [polygon[i], polygon[next]];
         if (doSegmentsIntersect(segment, segmentOfPolygon)) {

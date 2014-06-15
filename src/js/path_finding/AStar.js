@@ -5,7 +5,7 @@ function AStar() {
 }
 
 AStar.prototype.setHeuristic = function(vertex) {
-    for (var i in this.vertices) {
+    for (var i=0; i < this.vertices.length; ++i) {
         var deltaX = vertex.x - this.vertices[i].x;
         var deltaY = vertex.y - this.vertices[i].y;
         this.vertices[i].F = -1;
@@ -34,7 +34,7 @@ AStar.prototype.getPath = function(start, goal) {
 
         this.moveFromOpenToClosedList(vertex);
         var neighbours = this.getVertexNeighbours(vertex);
-        for (var i in neighbours) {
+        for (var i=0; i < neighbours.length; ++i) {
             var neighbor = neighbours[i];
             var G = this.computeG(vertex, neighbor);
             var F = G + neighbor.heuristic;
@@ -77,7 +77,7 @@ AStar.prototype.isVertexInOpenList = function(vertex) {
 AStar.prototype.getVertexNeighbours = function(vertex) {
     var nextVerticesToCheck = [];
 
-    for (var i in vertex.neighbours) {
+    for (var i=0; i < vertex.neighbours.length; ++i) {
         var neighbor = vertex.neighbours[i];
         if (!this.isVertexInClosedList(neighbor)) {
             nextVerticesToCheck.push(neighbor);
@@ -94,7 +94,7 @@ AStar.prototype.getNextVertexToCheck = function() {
     var lowerScore = this.openList[0].F;
     var index = 0;
 
-    for (var i in this.openList) {
+    for (var i=0; i < this.openList.length; ++i) {
         var score = this.openList[i].F;
         if (score < lowerScore) {
             lowerScore = score;

@@ -92,10 +92,12 @@ Termite.prototype.initExpertSystem = function() {
     // Si on retombe sur notre termitière, on donne le bout de bois
     this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
 
-    // Si le termite rencontre un mur ou un tas, il change de direction
+    // Si le "time" du termite est terminé, il change de direction (déplacement aléatoire)
     this.expertSystem.addRule("change_direction", ["timer_out"]);
-    this.expertSystem.addRule("change_direction", ["hit_wall"]);
-    this.expertSystem.addRule("change_direction", ["hit_heap"]);
+
+    // Si le termite rencontre un mur ou un tas, il retourne voir la reine
+    this.expertSystem.addRule("back_to_queen", ["hit_wall"]);
+    this.expertSystem.addRule("back_to_queen", ["hit_heap"]);
 
 };
 
@@ -170,7 +172,7 @@ Termite.prototype.analyze = function() {
 
 Termite.prototype.act = function(conclusions) {
 
-    for (var i in conclusions) {
+    for (var i=0; i < conclusions.length; ++i) {
 
         if (conclusions[i] == "change_direction") {
             this.takeARandomDirection();
