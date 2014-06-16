@@ -30,20 +30,20 @@ GraphTest = TestCase("A *", {
     },
 
     "test a path is an array of vertices": function() {
-        var path = this.aStar.getPath(this.vertexA, this.vertexB);
+        var path = this.aStar.getPathFromTo(this.vertexA, this.vertexB);
         assertArray(path);
     },
 
     "test A* returns an empty array when there is not possible path": function() {
         this.vertexA.neighbours = [];
         this.aStar.vertices = [this.vertexA, this.vertexB];
-        var path = this.aStar.getPath(this.vertexA, this.vertexB);
+        var path = this.aStar.getPathFromTo(this.vertexA, this.vertexB);
         assertEquals(0, path.length);
     },
 
     "test A* calculate heuristics before calculate path": function() {
         this.aStar.vertices = [this.vertexA, this.vertexB];
-        this.aStar.getPath(this.vertexA, this.vertexB);
+        this.aStar.getPathFromTo(this.vertexA, this.vertexB);
         assertEquals(10 + 10, this.vertexA.heuristic);
         assertEquals(0, this.vertexB.heuristic);
     },
@@ -110,7 +110,7 @@ GraphTest = TestCase("A *", {
         this.vertexA.neighbours = [this.vertexB];
         this.vertexB.neighbours = [vertexC];
         this.aStar.vertices = [this.vertexA, this.vertexB, vertexC];
-        var path = this.aStar.getPath(this.vertexA, vertexC);
+        var path = this.aStar.getPathFromTo(this.vertexA, vertexC);
         assertEquals(this.vertexA, path[0]);
         assertEquals(this.vertexB, path[1]);
         assertEquals(vertexC, path[2]);
@@ -134,7 +134,7 @@ GraphTest = TestCase("A *", {
 
         this.aStar.vertices = [a, b, c, d, e, f];
 
-        var path = this.aStar.getPath(b, e);
+        var path = this.aStar.getPathFromTo(b, e);
 
         assertEquals(b, path[0]);
         assertEquals(f, path[1]);
@@ -161,12 +161,31 @@ GraphTest = TestCase("A *", {
 
         this.aStar.vertices = [a, b, c, d, e, f];
 
-        var path = this.aStar.getPath(a, f);
+        var path = this.aStar.getPathFromTo(a, f);
 
         assertEquals(a, path[0]);
         assertEquals(c, path[1]);
         assertEquals(d, path[2]);
         assertEquals(e, path[3]);
         assertEquals(f, path[4]);
+    },
+
+    "test a path already computed does not need to be compute again": function() {
+
+        var a = new Vertex(0, 0);
+        var b = new Vertex(50, 50);
+        var c = new Vertex(25, 0);
+
+        a.neighbours = [b];
+        b.neighbours = [a, c];
+        c.neighbours = [b];
+
+        var graph = new Graph();
+        graph.vertices = [a, b, c];
+
+        this.aStar.setGraph(graph);
+        var path = this.aStar.getPathFromTo(a, c);
+        assertEquals(1, graph.paths.length);
+        assertEquals(path, graph.getPathFromTo(a, c));
     }
 });

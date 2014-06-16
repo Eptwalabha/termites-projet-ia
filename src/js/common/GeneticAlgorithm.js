@@ -91,14 +91,18 @@ GeneticAlgorithm.prototype.generateRandomGraph = function(queen) {
     return graph;
 };
 
-GeneticAlgorithm.prototype.alterGraphDNA = function(graph) {
+GeneticAlgorithm.prototype.alterGraphDNA = function(graph, random) {
+
+    if (random === undefined) {
+        random = Math;
+    }
 
     for (var i = 0, size = graph.vertices.length; i < size; i++) {
-        if (Math.random() > 0.1) {
+        if (random.random() > 0.1) {
             continue;
         }
-        graph.vertices[i].x += Math.random() * 5;
-        graph.vertices[i].y += Math.random() * 5;
+        graph.vertices[i].x += (random.random() - 0.5) * 5;
+        graph.vertices[i].y += (random.random() - 0.5) * 5;
     }
 
     if (Math.random() > 0.1) {
@@ -106,3 +110,41 @@ GeneticAlgorithm.prototype.alterGraphDNA = function(graph) {
     }
 };
 
+GeneticAlgorithm.prototype.getAllPathsFrom = function(graph, origin) {
+
+    var aStart = new AStar();
+    aStart.vertices = graph.vertices;
+    var paths = [];
+    for (var i = 0, size = graph.vertices.length; i < size; ++i) {
+        var path = aStart.getPathFromTo(origin, graph.vertices[i]);
+        if (path.length > 0) {
+            paths.push(path);
+        }
+    }
+    return paths;
+};
+
+GeneticAlgorithm.prototype.getAveragePathLength = function(paths) {
+    var sum = 0;
+    for (var i = 0, size = paths.length; i < size; i++) {
+        sum += getPathLength(paths[i]);
+    }
+    return sum / paths.length;
+};
+
+GeneticAlgorithm.prototype.computeGraphFitness = function(graph, origin) {
+
+    var polygons = getPolygonsFromVertices(graph.vertices);
+    var area = getVolumeOfBoundingBox(getBoundingBoxFromPolygon(polygons));
+    var totalArea = this.dimension.width * this.dimension.height;
+    var paths = this.getAllPathsFrom(graph, origin);
+    var nbrPath = paths.length;
+    var avgLength = this.getAveragePathLength(paths);
+    var avgDelta = graph.getAverageDistanceFrom(origin);
+    if (avgLength == 0 || totalArea == 0) {
+        graph.fitness = 0;
+    } else {
+        console.log("nbrPath = " + nbrPath + "; (area / totalArea) = " + (area / totalArea) + "; (avgDelta / avgLength) = " + (avgDelta / avgLength) + ";");
+        graph.fitness = (nbrPath * 100 + (area / totalArea) * 100) * (avgDelta / avgLength);
+    }
+};

@@ -1,6 +1,7 @@
 Graph = function(){
     this.vertices = [];
-    this.fitness = {};
+    this.fitness = 0;
+    this.paths = [];
 };
 
 Graph.prototype.addVertex = function(vertex) {
@@ -92,6 +93,36 @@ Graph.prototype.setConnections = function(walls) {
                 this.vertices[i].neighbours.push(this.vertices[j]);
                 this.vertices[j].neighbours.push(this.vertices[i]);
             }
+        }
+    }
+};
+
+Graph.prototype.getAverageDistanceFrom = function(origin) {
+    var sum = 0;
+    var size = this.vertices.length;
+    if (size == 0) {
+        return 0;
+    }
+
+    var deltaX, deltaY;
+    for (var i = 0; i < size; ++i) {
+        deltaX = origin.x - this.vertices[i].x;
+        deltaY = origin.y - this.vertices[i].y;
+        sum += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+    return sum / size;
+};
+
+Graph.prototype.savePathFromTo = function(from, to, path) {
+    this.paths.push({from : from, to : to, path : path});
+};
+
+Graph.prototype.getPathFromTo = function(from, to) {
+
+    for (var i = 0, size = this.paths.length; i < size; i++) {
+        var path = this.paths[i];
+        if (path.from == from && path.to == to) {
+            return path.path;
         }
     }
 };

@@ -90,3 +90,42 @@ var isPointRightOfLine = function(segment, point) {
     var pointB = [point[0] - segment[0][0], point[1] - segment[0][1]];
     return crossProduct(pointA, pointB) < 0;
 };
+
+var getBoundingBoxFromPolygon = function(polygons) {
+    var minimum = polygons[0];
+    var maximum = polygons[0];
+
+    for (var p = 0, size = polygons.length; p < size; ++p) {
+        minimum = [min(minimum[0], polygons[p][0]), min(minimum[1], polygons[p][1])];
+        maximum = [max(maximum[0], polygons[p][0]), max(maximum[1], polygons[p][1])];
+    }
+
+    return [minimum, maximum];
+};
+
+var getVolumeOfBoundingBox = function(polygons) {
+    return Math.abs(polygons[1][0] - polygons[0][0]) * Math.abs(polygons[1][1] - polygons[0][1]);
+};
+
+var getPolygonsFromVertices = function(vertices) {
+
+    var polygons = [];
+    for (var i = 0, size = vertices.length; i < size; ++i) {
+        polygons.push([vertices[i].x, vertices[i].y]);
+    }
+    return polygons;
+};
+
+var getPathLength = function(vertices) {
+    if (vertices.length < 2) {
+        return 0;
+    }
+    var sum = 0;
+    var deltaX, deltaY;
+    for (var i = 0, size = vertices.length - 1; i < size; i++) {
+        deltaX = vertices[i].x - vertices[i + 1].x;
+        deltaY = vertices[i].y - vertices[i + 1].y;
+        sum += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+    return sum;
+};

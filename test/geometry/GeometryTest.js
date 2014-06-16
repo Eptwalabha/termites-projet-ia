@@ -56,5 +56,22 @@ GraphTest = TestCase("GeometryTest", {
         var wall = new Wall();
         wall.setDimension(10, 2);
         assertFalse(doSegmentIntersectsWithWalls(segment, [wall]));
+    },
+
+    "test can determine a bounding box from an array of position": function() {
+        var positions = [[-20, 10], [-15, 0], [10, -30]];
+        assertEquals([[-20, -30], [10, 10]], getBoundingBoxFromPolygon(positions));
+    },
+
+    "test can return a volume from the bounding box of a polygon": function() {
+        var positions = [[-20, 10], [-15, 0], [10, -30]];
+        var boundingBox = getBoundingBoxFromPolygon(positions);
+        assertEquals(30 * 40, getVolumeOfBoundingBox(boundingBox));
+    },
+
+    "test can return an array of positions from a set of vertices": function() {
+        var vertexA = new Vertex(7, 5);
+        var vertexB = new Vertex(5, 3);
+        assertEquals([[7, 5], [5, 3]], getPolygonsFromVertices([vertexA, vertexB]));
     }
 });

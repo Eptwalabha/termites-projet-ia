@@ -11,6 +11,7 @@
     <script type="text/javascript" src="../js/graph/Geometry.js"></script>
     <script type="text/javascript" src="../js/graph/Vertex.js"></script>
     <script type="text/javascript" src="../js/graph/Graph.js"></script>
+    <script type="text/javascript" src="../js/common/GeneticAlgorithm.js"></script>
     <script type="text/javascript" src="../js/path_finding/AStar.js"></script>
     <script>
 
@@ -38,7 +39,7 @@
             canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
             aStart.vertices = graph.vertices;
             var closestVertex = getClosestVertex(graph.vertices, mouseVertex[0], mouseVertex[1]);
-            var path = aStart.getPath(graph.vertices[0], closestVertex);
+            var path = aStart.getPathFromTo(graph.vertices[0], closestVertex);
             world.draw(canvasContext);
             graph.draw(canvasContext);
             drawPath(path);
@@ -103,14 +104,16 @@
 
             var time = new Date().getTime();
 //            graph.randomize(wallList, canvasElement);
-            graph.randomizeVertices(50, canvasElement.width, canvasElement.height, wallList);
+            graph.randomizeVertices(30, canvasElement.width, canvasElement.height, wallList);
             graph.setConnections(wallList);
 
             console.log("init time = " + (new Date().getTime() - time) + "ms");
 
-            aStart.vertices = graph.vertices;
-            var path = aStart.getPath(graph.vertices[0], graph.vertices[19]);
-            console.log(path);
+            time = new Date().getTime();
+            var geneticAlgorithm = new GeneticAlgorithm();
+            geneticAlgorithm.setWorldDimension(canvasElement.width, canvasElement.height);
+            geneticAlgorithm.computeGraphFitness(graph, graph.vertices[0]);
+            console.log("time to compute fitness = " + (new Date().getTime() - time) + "ms, fitness = " + graph.fitness);
 
             var fps = 120;
             mainLoop = setInterval(update, 1000 / fps);

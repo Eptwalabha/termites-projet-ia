@@ -1,7 +1,8 @@
 function AStar() {
-    this.vertices = null;
+    this.vertices = [];
     this.openList = [];
     this.closedList = [];
+    this.graph = null;
 }
 
 AStar.prototype.setHeuristic = function(vertex) {
@@ -16,9 +17,23 @@ AStar.prototype.setHeuristic = function(vertex) {
     }
 };
 
-AStar.prototype.getPath = function(start, goal) {
-    this.setHeuristic(goal);
+AStar.prototype.setGraph = function(graph) {
+    this.graph = graph;
+};
 
+AStar.prototype.getPathFromTo = function(start, goal) {
+
+    if (this.graph !== undefined && this.graph !== null) {
+        var savedPath = this.graph.getPathFromTo(start, goal);
+        if (savedPath !== undefined) {
+            return savedPath;
+        }
+    }
+
+    if (start == goal) {
+        return [start];
+    }
+    this.setHeuristic(goal);
     this.openList = [start];
     this.closedList = [];
     start.F = start.heuristic;
@@ -34,7 +49,7 @@ AStar.prototype.getPath = function(start, goal) {
 
         this.moveFromOpenToClosedList(vertex);
         var neighbours = this.getVertexNeighbours(vertex);
-        for (var i in neighbours) {
+        for (var i = 0, size = neighbours.length; i < size; ++i) {
             var neighbor = neighbours[i];
             var G = this.computeG(vertex, neighbor);
             var F = G + neighbor.heuristic;
@@ -54,10 +69,16 @@ AStar.prototype.getPath = function(start, goal) {
         }
     }
 
+    var finalPath = []
     if (shortestDistance != -1) {
-        return this.rebuildPath(goal);
+        finalPath = this.rebuildPath(goal);
     }
-    return [];
+
+    if (this.graph !== undefined && this.graph !== null) {
+        this.graph.savePathFromTo(start, goal, finalPath);
+    }
+
+    return finalPath;
 };
 
 AStar.prototype.computeG = function(parent, children) {
@@ -118,7 +139,6 @@ AStar.prototype.rebuildPath = function(vertex) {
 };
 
 AStar.prototype.moveFromOpenToClosedList = function(vertex) {
-
     var index = this.openList.indexOf(vertex);
     if (index == -1) {
         return;
