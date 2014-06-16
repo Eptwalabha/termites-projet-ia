@@ -32,6 +32,7 @@ Termite.prototype.initExpertSystem = function() {
     // en y plaçant une nouvelle reine et se change en termite “ouvrier”.
     this.expertSystem.addRule("drop_queen", ["hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
     this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+    this.expertSystem.addRule("take_wood", ["uncharged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
 
     // Lorsqu’un termite “rōnin” rencontre une termitière, il jure fidélité à la reine qui la dirige et devient un termite “ouvrier”
     this.expertSystem.addRule("ally_queen", ["hit_heap", "dontHasQueen", "wood_heapHasQueen"]);
@@ -50,6 +51,8 @@ Termite.prototype.initExpertSystem = function() {
         this.expertSystem.addRule("kill_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
         this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
         this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen", "uncharged"]);
+
 
         // 2 - Sa reine est moins puissante (de 20 points) il va alors juré fidélité à sa nouvelle reine et l’informer
         // de la position de son ancienne reine.
@@ -61,7 +64,7 @@ Termite.prototype.initExpertSystem = function() {
         this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen", "uncharged"]);
         this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen"]);
 
-    // Si un termite rencontre un tas de bois sans reine et sans phéromone, deux options s’offrent à lui :
+    // Si un termite rencontre un tas de bois sans reine et sans phéromone, trois options s’offrent à lui :
 
         // 1 - Le tas de bois est plus petit (20 points) que la puissance de sa reine actuelle. Il laisse
         // le phéromone de sa reine sur le tas de bois, le récolte et retourne auprès de sa reine en l’informant
@@ -74,6 +77,11 @@ Termite.prototype.initExpertSystem = function() {
         // Il va alors changer le tas de bois en termitière et informer sa nouvelle reine de la position de son ancienne.
         this.expertSystem.addRule("drop_queen", ["hit_heap", "hasQueen", "wood_heapBiggerThanQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
         this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapBiggerThanQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+
+        // 3 - Le tas de bois est équivalent (différence inférieure à 20 points) à la puissance de sa reine,
+        // il prends alors un bout de bois et retourne voir sa reine.
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone", "wood_heapAsBigAsQueen", "uncharged"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone", "wood_heapAsBigAsQueen", "uncharged"]);
 
     // Si un termite rencontre un tas de bois avec un phéromone différent de celui de sa reine, il va effectuer
     // la somme du tas de bois et de la puissance de la reine qui le collecte.
@@ -94,17 +102,6 @@ Termite.prototype.initExpertSystem = function() {
 
     // Si le "time" du termite est terminé, il change de direction (déplacement aléatoire)
     this.expertSystem.addRule("change_direction", ["timer_out"]);
-
-    // Si le termite rencontre un mur ou un tas, il retourne voir la reine
-    //this.expertSystem.addRule("back_to_queen", ["hit_wall"]);
-    //this.expertSystem.addRule("back_to_queen", ["hit_heap"]);
-    
-    
-    
-    //règles temporaires avant l'intelligence de la reine
-    this.expertSystem.addRule("take_wood", ["hit_heap", "uncharged"]);
-    this.expertSystem.addRule("drop_wood", ["hit_heap", "charged", "different_heap"]);
-
 };
 
 Termite.prototype.takeARandomDirection = function () {
@@ -233,21 +230,25 @@ Termite.prototype.allyQueen = function() {
     if(oldQueen !== null) {
         this.queen.informNewAgent(oldQueen);
     }
+    console.log("Ally Queen");
 };
 
 Termite.prototype.propagateQueen = function() {
     this.lastTermite.setQueen(this.getQueen());
+    console.log("Propagate Queen");
 };
 
 Termite.prototype.addWood = function() {
     this.lastWoodHeap.addWood();
     this.caryingWood = false;
     this.lastPickUpHeap = this.lastWoodHeap;
+    console.log("Add wood");
 };
 
 Termite.prototype.takeWood = function() {
     this.lastWoodHeap.takeWood();
     this.caryingWood = true;
+    console.log("Take wood");
 };
 
 Termite.prototype.backToQueen = function() {
@@ -258,16 +259,20 @@ Termite.prototype.backToQueen = function() {
 
     this.speed = Math.random() * 150 + 150;
     this.nextChange = -99999999;
+
+    console.log("Back to queen");
 };
 
 Termite.prototype.killQueen = function() {
     this.lastWoodHeap.killQueen();
+    console.log("Kill Queen");
 };
 
 Termite.prototype.dropPheromone = function() {
      var pheromone = new Pheromone(this.getQueen());
     world.addAgent(pheromone);
     this.lastWoodHeap.setPheromone(pheromone);
+    console.log("Drop Pheromone");
 };
 
 Termite.prototype.dropQueen = function() {
@@ -292,6 +297,7 @@ Termite.prototype.dropQueen = function() {
 
     this.lastWoodHeap.setQueen(this.queen);
     world.addAgent(this.queen);
+    console.log("Drop Queen");
 };
 
 Termite.prototype.draw = function(context) {
