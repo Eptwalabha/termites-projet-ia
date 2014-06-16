@@ -145,6 +145,6 @@ GeneticAlgorithm.prototype.computeGraphFitness = function(graph, origin) {
         graph.fitness = 0;
     } else {
         console.log("nbrPath = " + nbrPath + "; (area / totalArea) = " + (area / totalArea) + "; (avgDelta / avgLength) = " + (avgDelta / avgLength) + ";");
-        graph.fitness = (nbrPath * 100 + (area / totalArea) * 100) * (avgDelta / avgLength);
+        graph.fitness = (nbrPath * 100 + (area / totalArea) * 100) * (avgDelta / avgLength) * (nbrPath / graph.vertices.length);
     }
 };

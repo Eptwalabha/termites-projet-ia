@@ -110,7 +110,7 @@ GraphTest = TestCase("GeneticAlgorithm", {
         var avgDelta = (0 + 10 + 10) / 3;
         this.genetic.setWorldDimension(300, 300);
         this.genetic.computeGraphFitness(this.graphA, a);
-        assertEquals((3 * 100 + (area / totalArea) * 100) * (avgDelta / avg), this.graphA.fitness);
+        assertEquals((3 * 100 + (area / totalArea) * 100) * (avgDelta / avg) * (3 / 3), this.graphA.fitness);
     },
 
     "test a population can be sort by ascendant fitness": function() {},
