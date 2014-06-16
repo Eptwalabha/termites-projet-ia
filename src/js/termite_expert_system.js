@@ -96,8 +96,14 @@ Termite.prototype.initExpertSystem = function() {
     this.expertSystem.addRule("change_direction", ["timer_out"]);
 
     // Si le termite rencontre un mur ou un tas, il retourne voir la reine
-    this.expertSystem.addRule("back_to_queen", ["hit_wall"]);
-    this.expertSystem.addRule("back_to_queen", ["hit_heap"]);
+    //this.expertSystem.addRule("back_to_queen", ["hit_wall"]);
+    //this.expertSystem.addRule("back_to_queen", ["hit_heap"]);
+    
+    
+    
+    //règles temporaires avant l'intelligence de la reine
+    this.expertSystem.addRule("take_wood", ["hit_heap", "uncharged"]);
+    this.expertSystem.addRule("drop_wood", ["hit_heap", "charged", "different_heap"]);
 
 };
 
