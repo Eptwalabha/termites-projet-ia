@@ -58,7 +58,7 @@ RuleBase.prototype.initialPremises = function(goalLabel, result) {
 };
 
 RuleBase.prototype.isPremise = function(label) {
-	for(var ruleIndex=0; ruleIndex < this.rules.length) {
+	for(var ruleIndex=0; ruleIndex < this.rules.length; ++ruleIndex) {
 		var rule = this.rules[ruleIndex];
 		for(var premiseIndex=0; premiseIndex < rule.premises.length; ++premiseIndex) {
 			var premise = rule.premises[premiseIndex];
