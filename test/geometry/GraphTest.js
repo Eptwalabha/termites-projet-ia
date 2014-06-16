@@ -34,6 +34,6 @@ GraphTest = TestCase("GraphTest", {
     "test can return true if segment intersects a wall": function() {
         var wall = new Wall();
         wall.setDimension(5, 10);
-        assertTrue(doSegmentIntersectsWithWalls([[0, 10], [0, -10]], wall));
+        assertTrue(doSegmentIntersectsWithWalls([[0, 10], [0, -10]], [wall]));
     }
 });

@@ -25,7 +25,7 @@ GraphTest = TestCase("A *", {
     "test A* can gives heuristic value to a vertex": function() {
         this.aStar.vertices = [this.vertexA, this.vertexB];
         this.aStar.setHeuristic(new Vertex(10, 10));
-        assertEquals(Math.sqrt(10 * 10 + 10 * 10), this.vertexA.heuristic);
+        assertEquals((10 + 10), this.vertexA.heuristic);
         assertEquals(0, this.vertexB.heuristic);
     },
 
@@ -44,7 +44,7 @@ GraphTest = TestCase("A *", {
     "test A* calculate heuristics before calculate path": function() {
         this.aStar.vertices = [this.vertexA, this.vertexB];
         this.aStar.getPath(this.vertexA, this.vertexB);
-        assertEquals(Math.sqrt(10 * 10 + 10 * 10), this.vertexA.heuristic);
+        assertEquals(10 + 10, this.vertexA.heuristic);
         assertEquals(0, this.vertexB.heuristic);
     },
 

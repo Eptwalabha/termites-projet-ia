@@ -5,14 +5,14 @@ function AStar() {
 }
 
 AStar.prototype.setHeuristic = function(vertex) {
-    for (var i=0; i < this.vertices.length; ++i) {
+    for (var i in this.vertices) {
         var deltaX = vertex.x - this.vertices[i].x;
         var deltaY = vertex.y - this.vertices[i].y;
         this.vertices[i].F = -1;
         this.vertices[i].G = 0;
-        this.vertices[i].heuristic = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+//        this.vertices[i].heuristic = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 //        // manhattan heuristic
-//        this.vertices[i].heuristic = Math.abs(deltaX) + Math.abs(deltaY);
+        this.vertices[i].heuristic = Math.abs(deltaX) + Math.abs(deltaY);
     }
 };
 
@@ -34,7 +34,7 @@ AStar.prototype.getPath = function(start, goal) {
 
         this.moveFromOpenToClosedList(vertex);
         var neighbours = this.getVertexNeighbours(vertex);
-        for (var i=0; i < neighbours.length; ++i) {
+        for (var i in neighbours) {
             var neighbor = neighbours[i];
             var G = this.computeG(vertex, neighbor);
             var F = G + neighbor.heuristic;
