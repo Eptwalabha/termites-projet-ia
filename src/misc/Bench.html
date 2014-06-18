@@ -3,15 +3,21 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
+    <script type="text/javascript" src="../js/expert_system/fact.js"></script>
+    <script type="text/javascript" src="../js/expert_system/rule.js"></script>
+    <script type="text/javascript" src="../js/expert_system/engine.js"></script>
+    <script type="text/javascript" src="../js/expert_system/expert_system.js"></script>
 
     <script type="text/javascript" src="../js/constants.js"></script>
     <script type="text/javascript" src="../js/world.js"></script>
     <script type="text/javascript" src="../js/agent.js"></script>
     <script type="text/javascript" src="../js/wall.js"></script>
+    <script type="text/javascript" src="../js/queen.js"></script>
     <script type="text/javascript" src="../js/graph/Geometry.js"></script>
     <script type="text/javascript" src="../js/graph/Vertex.js"></script>
     <script type="text/javascript" src="../js/graph/Graph.js"></script>
     <script type="text/javascript" src="../js/common/GeneticAlgorithm.js"></script>
+    <script type="text/javascript" src="../js/common/QSort.js"></script>
     <script type="text/javascript" src="../js/path_finding/AStar.js"></script>
     <script>
 
@@ -19,8 +25,10 @@
         var canvasElement = null;
         var canvasContext = null;
         var speed = 1;
-        var graph = new Graph();
-        var aStart = new AStar();
+        var geneticAlgorithm = null;
+        var graphs = null;
+        var queen = null;
+        var aStar = new AStar();
         var mainLoop = null;
         var lastUpdate = Date.now();
         var dt = 0;
@@ -37,11 +45,13 @@
             updateTime();
             world.update(dt * speed);
             canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            aStart.vertices = graph.vertices;
-            var closestVertex = getClosestVertex(graph.vertices, mouseVertex[0], mouseVertex[1]);
-            var path = aStart.getPathFromTo(graph.vertices[0], closestVertex);
+
+            aStar.setGraph(graphs[0]);
+            var closestVertex = getClosestVertex(graphs[0].vertices, mouseVertex[0], mouseVertex[1]);
+            var start = getClosestVertex(graphs[0].vertices, queen.vertex.x, queen.vertex.y);
+            var path = aStar.getPathFromTo(start, closestVertex);
             world.draw(canvasContext);
-            graph.draw(canvasContext);
+            graphs[0].draw(canvasContext);
             drawPath(path);
         }
 
@@ -102,27 +112,40 @@
                 wallList.push(wall);
             }
 
-            var time = new Date().getTime();
-//            graph.randomize(wallList, canvasElement);
-            graph.randomizeVertices(30, canvasElement.width, canvasElement.height, wallList);
-            graph.setConnections(wallList);
+            queen = new Queen({power: 100, x: (canvasElement.width / 2), y: (canvasElement.height / 2)});
+            queen.knownWalls = wallList;
 
-            console.log("init time = " + (new Date().getTime() - time) + "ms");
-
-            time = new Date().getTime();
-            var geneticAlgorithm = new GeneticAlgorithm();
+            geneticAlgorithm = new GeneticAlgorithm(queen);
             geneticAlgorithm.setWorldDimension(canvasElement.width, canvasElement.height);
-            geneticAlgorithm.computeGraphFitness(graph, graph.vertices[0]);
-            console.log("time to compute fitness = " + (new Date().getTime() - time) + "ms, fitness = " + graph.fitness);
+            geneticAlgorithm.setFixedVertices([new Vertex(queen.x, queen.y)]);
+            geneticAlgorithm.setPopulationSize(15);
+            geneticAlgorithm.setDNASize(20);
+
+            nextGeneration();
 
             var fps = 120;
             mainLoop = setInterval(update, 1000 / fps);
         }
 
+        function nextGeneration() {
+
+            var time = new Date().getTime();
+            for (var x = 0; x < 49; x++) {
+                graphs = geneticAlgorithm.processNextGeneration();
+            }
+            graphs = geneticAlgorithm.processNextGeneration();
+            console.log("time to process generation n°" + geneticAlgorithm.generation + " = " + (new Date().getTime() - time) + "ms");
+
+            for (var i = 0, size = graphs.length; i < size; i++)
+                console.log(" fitness score entity n° " + i + "= " + graphs[i].fitness);
+            console.log(graphs[0]);
+
+        }
 
     </script>
 </head>
 <body onload="init()">
     <canvas id="canvas" width="600" height="600" style="background-color:#eee; display:inline-block"></canvas>
+    <button onclick="nextGeneration();">nouvelle génération</button>
 </body>
 </html>

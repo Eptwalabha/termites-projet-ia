@@ -15,6 +15,7 @@ function Queen(params) {
 
     this.setPower(params.power);
 	this.moveTo(params.x, params.y);
+    this.vertex = new Vertex(params.x, params.y);
 }
 
 Queen.prototype.informNewAgent = function(agent) {

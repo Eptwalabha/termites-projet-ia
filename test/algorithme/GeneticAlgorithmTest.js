@@ -10,9 +10,8 @@ MockRandom.prototype.random = function() {
 GraphTest = TestCase("GeneticAlgorithm", {
 
     "setUp": function () {
-        this.mokeRandom =
         this.queen = new Queen({power: 10, x: 0, y: 0});
-        this.genetic = new GeneticAlgorithm();
+        this.genetic = new GeneticAlgorithm(this.queen);
         this.graphA = new Graph();
         this.graphB = new Graph();
     },
@@ -55,20 +54,16 @@ GraphTest = TestCase("GeneticAlgorithm", {
         assertEquals(20, graph.vertices.length);
     },
 
-    "test genetic algorithm can gives a fitness score to an entity": function() {
-        var score = this.genetic.getFitnessScore(this.queen, this.graphA);
-        assertNumber(score);
-    },
-
     "test can apply mutation to graph": function() {
         var a = new Vertex(3, 5);
-        var b = new Vertex(10, 0);
+        var b = new Vertex(10, 20);
         this.graphA.vertices = [a, b];
-        this.mokeRandom = new MockRandom([1, 0.01, 0.5, 0.1]);
+        this.mokeRandom = new MockRandom([1, 0.01, 0.5, 0.5, 0.1]);
+        this.genetic.dimension = {width : 1000, height: 1000};
         this.genetic.alterGraphDNA(this.graphA, this.mokeRandom);
         assertEquals([3, 5], [a.x, a.y]);
         assertEquals((10 + (0.5 - 0.5) * 5), b.x);
-        assertEquals((0 + (0.1 - 0.5) * 5), b.y);
+        assertEquals((20 + (0.1 - 0.5) * 5), b.y);
     },
 
     "test can compute every paths of the graph from the queen": function() {
@@ -110,16 +105,6 @@ GraphTest = TestCase("GeneticAlgorithm", {
         var avgDelta = (0 + 10 + 10) / 3;
         this.genetic.setWorldDimension(300, 300);
         this.genetic.computeGraphFitness(this.graphA, a);
-        assertEquals((3 * 100 + (area / totalArea) * 100) * (avgDelta / avg) * (3 / 3), this.graphA.fitness);
-    },
-
-    "test a population can be sort by ascendant fitness": function() {},
-
-    "test two entities of a population can be mixed to generate two new entities": function() {},
-
-    "test sometime the less fitted entity is replace by a new and random one": function() {},
-
-    "test a population can move to the next generation": function() {},
-
-    "test can return the entity that reaches or surpasses the fitness threshold": function() {}
+        assertEquals((3 * 100 + (area / totalArea) * 100) * (avg / avgDelta) * (3 / 3), this.graphA.fitness);
+    }
 });

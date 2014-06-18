@@ -27,12 +27,13 @@ Graph.prototype.randomizeVertices = function(nbr, width, height, walls) {
     }
 };
 
-Graph.prototype.randomize = function(walls, canvasElement) {
-    var nbr = 20;
-    var width = canvasElement.width;
-    var height = canvasElement.height;
-
-    this.randomizeVertices(nbr, width, height, walls);
+Graph.prototype.randomize = function(nbr, fixedVertices, walls, dimension) {
+    if (nbr - fixedVertices.length > 0) {
+        this.randomizeVertices(nbr - fixedVertices.length, dimension.width, dimension.height, walls);
+    }
+    for (var i = 0, size = fixedVertices.length; i < size; i++) {
+        this.vertices.push(new Vertex(fixedVertices[i].x, fixedVertices[i].y));
+    }
     this.setConnections(walls);
 };
 
@@ -71,15 +72,9 @@ Graph.prototype.hasVertex = function(position) {
     return false;
 };
 
-Graph.prototype.getSquareDist = function(pointA, pointB) {
-    var deltaX = pointA[0] - pointB[0];
-    var deltaY = pointA[1] - pointB[1];
-    return deltaX * deltaX + deltaY * deltaY;
-};
-
 Graph.prototype.setConnections = function(walls) {
 
-    for (var vertex=0; vertex < this.vertices.length; ++vertex) {
+    for (var vertex = 0; vertex < this.vertices.length; ++vertex) {
         this.vertices[vertex].neighbours = [];
     }
 
@@ -108,7 +103,8 @@ Graph.prototype.getAverageDistanceFrom = function(origin) {
     for (var i = 0; i < size; ++i) {
         deltaX = origin.x - this.vertices[i].x;
         deltaY = origin.y - this.vertices[i].y;
-        sum += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+//        sum += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        sum += Math.abs(deltaX) + Math.abs(deltaY);
     }
     return sum / size;
 };
@@ -125,4 +121,22 @@ Graph.prototype.getPathFromTo = function(from, to) {
             return path.path;
         }
     }
+};
+
+Graph.prototype.getVertexAt = function(x, y) {
+    var index, min = -1;
+    for (var i = 0, size = this.vertices.length; i < size; i++) {
+        var distance = Graph.getSquareDist(this.vertices[i].x, this.vertices[i].y, x, y);
+        if (min == -1 || distance < min) {
+            min = distance;
+            index = i;
+        }
+    }
+    return this.vertices[index];
+};
+
+Graph.getSquareDist = function(x1, y1, x2, y2) {
+    var deltaX = x1 - x2;
+    var deltaY = y1 - y2;
+    return deltaX * deltaX + deltaY * deltaY;
 };

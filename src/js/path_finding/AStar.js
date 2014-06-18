@@ -7,12 +7,13 @@ function AStar() {
 
 AStar.prototype.setHeuristic = function(vertex) {
     for (var i in this.vertices) {
+        this.vertices[i].parent = null;
         var deltaX = vertex.x - this.vertices[i].x;
         var deltaY = vertex.y - this.vertices[i].y;
         this.vertices[i].F = -1;
         this.vertices[i].G = 0;
 //        this.vertices[i].heuristic = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-//        // manhattan heuristic
+//        // Manhattan heuristic
         this.vertices[i].heuristic = Math.abs(deltaX) + Math.abs(deltaY);
     }
 };
@@ -69,7 +70,7 @@ AStar.prototype.getPathFromTo = function(start, goal) {
         }
     }
 
-    var finalPath = []
+    var finalPath = [];
     if (shortestDistance != -1) {
         finalPath = this.rebuildPath(goal);
     }
