@@ -19,7 +19,7 @@ FactBase.prototype.addFact = function(label) {
 };
 
 FactBase.prototype.getFact = function(label) {
-	for(var index = 0; index < this.facts.length; ++index) {
+	for(var index in this.facts) {
 		var fact = this.facts[index];
 		if(fact.label == label) {
 			return fact;
@@ -49,7 +49,7 @@ FactBase.prototype.hasFact = function(label) {
 };
 
 FactBase.prototype.resetValues = function() {
-	for(var index = 0; index < this.facts.length; ++index) {
+	for(var index in this.facts) {
 		var fact = this.facts[index];
 		fact.value = false;
 	}

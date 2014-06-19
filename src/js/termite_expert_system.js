@@ -32,7 +32,6 @@ Termite.prototype.initExpertSystem = function() {
     // en y plaçant une nouvelle reine et se change en termite “ouvrier”.
     this.expertSystem.addRule("drop_queen", ["hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
     this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
-    this.expertSystem.addRule("take_wood", ["uncharged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
 
     // Lorsqu’un termite “rōnin” rencontre une termitière, il jure fidélité à la reine qui la dirige et devient un termite “ouvrier”
     this.expertSystem.addRule("ally_queen", ["hit_heap", "dontHasQueen", "wood_heapHasQueen"]);
@@ -341,6 +340,7 @@ Termite.prototype.processCollision = function(collidedAgent) {
 
     if (this.last_hit_type === "wood_heap") {
         this.lastWoodHeap = collidedAgent;
+       // console.log("hit heap");
     }
 
     else if(this.last_hit_type === "termite") {

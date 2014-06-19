@@ -16,7 +16,7 @@ ExpertSystem.prototype.addRule = function(conclusionLabel, premiseLabels) {
 	conclusion = this.factBase.addFact(conclusionLabel);
 	
 	var premises = [];
-	for(var premiseIndex=0; premiseIndex < premiseLabels.length; ++premiseIndex) {
+	for(var premiseIndex in premiseLabels) {
 		premise = this.factBase.addFact(premiseLabels[premiseIndex]);
 		premises.push(premise);
 	}

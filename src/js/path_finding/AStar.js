@@ -50,7 +50,7 @@ AStar.prototype.getPathFromTo = function(start, goal) {
 
         this.moveFromOpenToClosedList(vertex);
         var neighbours = this.getVertexNeighbours(vertex);
-        for (var i = 0, size = neighbours.length; i < size; ++i) {
+        for (var i in neighbours) {
             var neighbor = neighbours[i];
             var G = this.computeG(vertex, neighbor);
             var F = G + neighbor.heuristic;
@@ -99,7 +99,7 @@ AStar.prototype.isVertexInOpenList = function(vertex) {
 AStar.prototype.getVertexNeighbours = function(vertex) {
     var nextVerticesToCheck = [];
 
-    for (var i=0; i < vertex.neighbours.length; ++i) {
+    for (var i in  vertex.neighbours) {
         var neighbor = vertex.neighbours[i];
         if (!this.isVertexInClosedList(neighbor)) {
             nextVerticesToCheck.push(neighbor);
@@ -116,7 +116,7 @@ AStar.prototype.getNextVertexToCheck = function() {
     var lowerScore = this.openList[0].F;
     var index = 0;
 
-    for (var i=0; i < this.openList.length; ++i) {
+    for (var i in this.openList) {
         var score = this.openList[i].F;
         if (score < lowerScore) {
             lowerScore = score;
