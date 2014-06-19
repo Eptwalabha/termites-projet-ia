@@ -55,6 +55,7 @@ Agent.prototype.drop = function(agent) {
 };
 
 Agent.prototype.moveTo = function(x, y) {
+	console.log('moveTo', x, y)
     this.previousX = this.x;
     this.previousY = this.y;
 	this.x = x;
@@ -65,7 +66,7 @@ Agent.prototype.moveBy = function(direction, length) {
 	if(direction.x != 0 && direction.y != 0 && length > 0) {
 		var moveVect = new Vect(direction.x, direction.y);
 		moveVect.normalize(length);
-		//console.log(direction.x, direction.y);
+		console.log('normalize', moveVect.x, moveVect.y);
         var x = this.x + moveVect.x;
         var y = this.y + moveVect.y;
         this.moveTo(x, y);

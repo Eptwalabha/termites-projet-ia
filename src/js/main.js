@@ -49,7 +49,7 @@ function init() {
                         canvasElement.height * Math.random());
     }
 
-    for(i = 0; i < 50; i ++) {
+    for(i = 0; i < 1; i ++) {
         var termite = new Termite();
         world.addAgent(termite);
         termite.moveTo( canvasElement.width * Math.random(), 

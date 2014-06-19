@@ -103,17 +103,6 @@ Termite.prototype.initExpertSystem = function() {
     this.expertSystem.addRule("change_direction", ["timer_out"]);
 };
 
-Termite.prototype.takeARandomDirection = function () {
-
-    this.destination = {
-        x : this.last_hit_type == "wall" ? -1 * this.destination.x + 10 : Math.random() * 200 - 100,
-        y : this.last_hit_type == "wall" ? -1 * this.destination.y - 10 : Math.random() * 200 - 100
-    };
-
-    this.speed = Math.random() * 150 + 150;
-    this.nextChange = Math.random() * 800 + 200
-};
-
 Termite.prototype.update = function(dt) {
 
     this.perceive();
@@ -126,12 +115,13 @@ Termite.prototype.update = function(dt) {
     this.nextChange -= dt;
     this.last_hit_type = "";
     this.lastWoodHeap = null;
+    this.lastTermite = null;
 };
 
 Termite.prototype.perceive = function() {
 
     this.expertSystem.resetFactValues();
-    this.expertSystem.setFactValid("timer_out", (this.nextChange !== -99999999 && this.nextChange <= 0));
+    this.expertSystem.setFactValid("timer_out", this.nextChange <= 0);
     this.expertSystem.setFactValid("hit_wall", this.last_hit_type == "wall");
     this.expertSystem.setFactValid("hit_heap", this.last_hit_type == "wood_heap");
     this.expertSystem.setFactValid("hit_termite", this.last_hit_type == "termite");
@@ -214,6 +204,25 @@ Termite.prototype.act = function(conclusions) {
     }
 };
 
+Termite.prototype.takeARandomDirection = function () {
+
+    if(this.caryingWood) {
+        return;
+    }
+
+    console.clear();
+
+    this.destination = {
+        x : this.last_hit_type == "wall" ? -1 * this.destination.x + 10 : Math.random() * 200 - 100,
+        y : this.last_hit_type == "wall" ? -1 * this.destination.y - 10 : Math.random() * 200 - 100
+    };
+
+    this.speed = Math.random() * 150 + 150;
+    this.nextChange = Math.random() * 800 + 200;
+
+    console.log('randomDirection', this.destination)
+};
+
 Termite.prototype.allyQueen = function() {
     var oldQueen = null;
     if(this.hasQueen()) {
@@ -256,10 +265,7 @@ Termite.prototype.backToQueen = function() {
         y : this.queen.y
     };
 
-    this.speed = Math.random() * 150 + 150;
-    this.nextChange = -99999999;
-
-    console.log("Back to queen");
+    console.log('Back to Queen', this.destination)
 };
 
 Termite.prototype.killQueen = function() {
@@ -296,7 +302,7 @@ Termite.prototype.dropQueen = function() {
 
     this.lastWoodHeap.setQueen(this.queen);
     world.addAgent(this.queen);
-    console.log("Drop Queen");
+    console.log("Drop Queen", this.queen.x, this.queen.y, 'from', this.x, this.y);
 };
 
 Termite.prototype.draw = function(context) {

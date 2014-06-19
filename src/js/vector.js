@@ -4,7 +4,7 @@ function Vect(x, y) {
 }
 
 Vect.prototype.length = function() {
-	return Math.sqrt(this.x*this.x + this.y*this.	y);
+	return Math.sqrt(this.x*this.x + this.y*this.y);
 };
 
 Vect.prototype.normalize = function(length) {
