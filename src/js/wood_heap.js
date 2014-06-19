@@ -45,7 +45,7 @@ WoodHeap.prototype.takeWood = function() {
 };
 
 WoodHeap.prototype.hasQueen = function() {
-	return this.queen;
+	return (this.queen !== null && this.queen !== undefined);
 };
 
 
