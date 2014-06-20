@@ -33,7 +33,7 @@ Termite.prototype.initExpertSystem = function() {
     // Lorsqu’un termite “rōnin” rencontre un tas de bois sans reine, il change ce tas de bois en termitière
     // en y plaçant une nouvelle reine et se change en termite “ouvrier”.
     this.expertSystem.addRule("drop_queen", ["hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
-    this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+    //this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
 
     // Lorsqu’un termite “rōnin” rencontre une termitière, il jure fidélité à la reine qui la dirige et devient un termite “ouvrier”
     this.expertSystem.addRule("ally_queen", ["hit_heap", "dontHasQueen", "wood_heapHasQueen"]);
