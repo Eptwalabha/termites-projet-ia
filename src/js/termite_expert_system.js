@@ -102,6 +102,9 @@ Termite.prototype.initExpertSystem = function() {
     this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
     this.expertSystem.addRule("inform_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
 
+    // Un termite “ouvrier” sans travail va demander un travail à sa reine.
+    this.expertSystem.addRule("get_order_from_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
+
     // Si on rencontre un tas de bois avec notre pheromone, on recolte si possible
     this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneIsQueens", "uncharged"]);
 
@@ -214,16 +217,24 @@ Termite.prototype.act = function(conclusions) {
         else if (conclusions[i] == "inform_queen") {
             this.informQueen();
         }
+
+        else if (conclusions[i] == "get_order_from_queen") {
+            this.getOrderFromQueen();
+        }
     }
 };
 
+Termite.prototype.receiveOrderFromQueen = function() {
+    debug('receiveOrderFromQueen')
+};
+
+Termite.prototype.getOrderFromQueen = function() {
+    this.queen.newTaskRequest(this);
+
+    debug('getOrderFromQueen')
+};
+
 Termite.prototype.takeARandomDirection = function () {
-
-    // if(this.caryingWood) {
-    //     return;
-    // }
-
-    // console.clear();
 
     this.destination = {
         x : Math.random() * 200 - 100,
@@ -233,7 +244,7 @@ Termite.prototype.takeARandomDirection = function () {
     this.speed = Math.random() * 150 + 150;
     this.nextChange = Math.random() * 800 + 200;
 
-    // debug('randomDirection', this.destination)
+    debug('randomDirection ' + this.destination)
 };
 
 Termite.prototype.allyQueen = function() {
@@ -286,7 +297,7 @@ Termite.prototype.backToQueen = function() {
     if(this.hasQueen()) {
         this.takeARandomDirection();
 
-        debug('Back to Queen', true)
+        debug('Back to Queen')
         return;
     }
     
@@ -328,7 +339,6 @@ Termite.prototype.dropQueen = function() {
     this.lastWoodHeap.setQueen(this.queen);
     world.addAgent(this.queen);
     debug("Drop Queen");
-    // debug("Drop Queen", this.queen.x, this.queen.y, 'from', this.x, this.y);
 };
 
 Termite.prototype.informQueen = function() {

@@ -26,6 +26,12 @@ canvas {
 	position: absolute;
 }
 
+@media (max-width: 1200px) {
+	.controls {
+		position: inherit;
+	}
+}
+
 .controls h3 {
 	border-bottom: 1px solid rgba(0,0,0,.5);
 	margin-bottom: 20px;

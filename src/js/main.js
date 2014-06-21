@@ -42,14 +42,14 @@ function init() {
         woodHeap.moveTo(canvasElement.width * Math.random(), canvasElement.height * Math.random());
     }
 
-    for(var i = 0; i < 0; i++) {
+    for(var i = 0; i < 6; i++) {
         var wall = new Wall();
         world.addAgent(wall);
         wall.moveTo(    canvasElement.width * Math.random(),
                         canvasElement.height * Math.random());
     }
 
-    for(i = 0; i < 1; i ++) {
+    for(i = 0; i < 50; i ++) {
         var termite = new Termite();
         world.addAgent(termite);
         termite.moveTo( canvasElement.width * Math.random(), 
