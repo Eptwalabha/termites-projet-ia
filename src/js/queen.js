@@ -13,6 +13,9 @@ function Queen(params) {
     this.knownWalls = [];
     this.knownAgents = [];
 
+    this.termitesWaitingForTask = [];
+    this.hasNewAgent = false;
+
     this.setPower(params.power);
 	this.moveTo(params.x, params.y);
     this.vertex = new Vertex(params.x, params.y);
@@ -20,9 +23,11 @@ function Queen(params) {
 
 Queen.prototype.informNewAgent = function(agent) {
     this.knownAgents[agent.id] = agent;
+    this.hasNewAgent = true;
 };
 
 Queen.prototype.updateGraphAndStrategy = function () {
+    debug('updateGraphAndStrategy')
     this.generateGraph();
     this.updateStrategy();
 };
@@ -35,7 +40,20 @@ Queen.prototype.updateStrategy = function () {
 
 };
 
+Queen.prototype.newTaskRequest = function(agent) {
+    this.termitesWaitingForTask.push(agent);
+};
+
 Queen.prototype.giveNewTask = function() {
+
+    debug('giveNewTask')
+    for(var termite in this.termitesWaitingForTask) {
+        this.termitesWaitingForTask[termite].receiveOrderFromQueen(/*
+
+            ICI ORDRE DE LA REINE
+        
+        */);
+    }
 
 };
 
@@ -50,15 +68,38 @@ Queen.prototype.getPower = function() {
 Queen.prototype.initExpertSystem = function() {
     // Une reine qui reçoit de nouvelles informations va mettre à jour
     // son graphe de déplacement et modifier la stratégie de sa termitière.
-    this.expertSystem.addRule("update_graph_and_strategy", ["meet_termite", "new_wood_heap_or_new_wall"]);
+    this.expertSystem.addRule("update_graph_and_strategy", ["new_agent"]);
 
     // Une reine qui reçoit une demande de travail, va se charger de fournir au demandeur d’emploi une destination
     // (correspondant à une zone à explorer ou un tas de bois à collecter).
-    this.expertSystem.addRule("give_new_task", ["meet_termite","termite_asked_for_work"]);
+    this.expertSystem.addRule("give_new_task", ["termite_asked_for_work"]);
 };
+
+Queen.prototype.perceive = function() {
+
+    this.expertSystem.resetFactValues();
+    
+    this.expertSystem.setFactValid("new_agent", this.hasNewAgent);
+
+    this.expertSystem.setFactValid("termite_asked_for_work", this.termitesWaitingForTask.length > 0);
+
+};
+
+Queen.prototype.update = function(dt) {
+    
+    this.perceive();
+
+    var conclusions = this.analyze();
+    this.act(conclusions);
+
+    this.termitesWaitingForTask = [];
+    this.hasNewAgent = false;
+};
+
 Queen.prototype.analyze = function() {
     return this.expertSystem.inferForward();
 };
+
 Queen.prototype.act = function(conclusions) {
     for(var i=0; i < conclusions.length; ++i ) {
         if(conclusions[i] == "update_graph_and_strategy") {
@@ -78,8 +119,4 @@ Queen.prototype.draw = function(context) {
     context.arc(this.x, this.y, this.boundingRadius, 0, 2*Math.PI);
     context.fill();
     context.stroke();
-};
-
-Queen.prototype.update = function(dt) {
-
 };

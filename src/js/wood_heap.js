@@ -41,7 +41,6 @@ WoodHeap.prototype.addWood = function() {
 
 WoodHeap.prototype.takeWood = function() {
 	this.setWoodVolume(--this.woodCount);
-	
 };
 
 WoodHeap.prototype.hasQueen = function() {
