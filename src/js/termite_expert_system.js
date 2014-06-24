@@ -227,7 +227,6 @@ Termite.prototype.act = function(conclusions) {
 
 Termite.prototype.receiveOrderFromQueen = function(path) {
     debug('receiveOrderFromQueen')
-    console.log(path)
 };
 
 Termite.prototype.getOrderFromQueen = function() {

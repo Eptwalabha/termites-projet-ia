@@ -30,20 +30,25 @@ function Queen(params) {
 
 Queen.prototype.informNewAgent = function(agent) {
 
-    if(agent.typeId === 'wall' && !this.knownWalls[agent.id]) {
-        this.knownWalls[agent.id] = agent;
-        this.hasNewAgent = true;
-    }
+    if(this.knownAgents[agent.id] == null || this.knownAgents[agent.id] == undefined) {
 
-    else if(agent.typeId === "wood_heap" && !this.knownWoodHeaps[agent.id]) {
-        this.knownWoodHeaps[agent.id] = agent;
-        this.hasNewAgent = true;
-        this.geneticAlgorithm.addFixedVertex(agent.vertex);
-    }
-
-    else if(agent.typeId === "termite" && !this.knownAgents[agent.id]) {
         this.knownAgents[agent.id] = agent;
-        this.hasNewAgent = true;
+
+        if(agent.typeId === 'wall' && !this.knownWalls[agent.id]) {
+            this.knownWalls[agent.id] = agent;
+            this.hasNewAgent = true;
+        }
+
+        else if(agent.typeId === "wood_heap") {
+            this.knownWoodHeaps.push(agent);
+            this.hasNewAgent = true;
+            this.geneticAlgorithm.addFixedVertex(agent.vertex);
+        }
+
+        else if(agent.typeId === "termite" && !this.knownAgents[agent.id]) {
+            this.knownAgents[agent.id] = agent;
+            this.hasNewAgent = true;
+        }
     }
 
 };
@@ -80,10 +85,10 @@ Queen.prototype.giveNewTask = function() {
     var graph = this.graphs[0];
     if(graph !== null && this.knownWoodHeaps !== undefined && this.knownWoodHeaps.length > 0) {
 
-        console.log(this.knownWoodHeaps.length)
 
         var path = graph.getPathFromTo(this.vertex, this.knownWoodHeaps[0].vertex);
-        
+
+        console.log(path);
         for(var termite in this.termitesWaitingForTask) {
             this.termitesWaitingForTask[termite].receiveOrderFromQueen(path);
         }

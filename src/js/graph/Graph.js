@@ -114,7 +114,7 @@ Graph.prototype.savePathFromTo = function(from, to, path) {
 };
 
 Graph.prototype.getPathFromTo = function(from, to) {
-
+    console.log("coucou");
     for (var i = 0, size = this.paths.length; i < size; i++) {
         var path = this.paths[i];
         if (path.from == from && path.to == to) {
