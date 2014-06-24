@@ -15,7 +15,7 @@ Graph.prototype.randomizeVertices = function(nbr, width, height, walls) {
         do {
             noCollide = true;
             vertex = new Vertex(width * Math.random(), height * Math.random());
-            for (var k = 0, size2 = walls.length; k < size2; k++) {
+            for (var k in walls) {
                 if (isPointInWall([vertex.x, vertex.y], walls[k])) {
                     noCollide = false;
                     break;
