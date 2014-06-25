@@ -30,7 +30,7 @@
             <div id="speedSlider" style="width: 200px; margin: 20px;"></div>
 
 
-            <a href="./examples/astar.html" class="btn btn-lg btn-info" role="button">
+            <a href="./examples/AStar.html" class="btn btn-lg btn-info" role="button">
                 Voir la page du A*
             </a>
             <br><br>
@@ -276,12 +276,21 @@
                             <p>Un algorithme génétique permet d’explorer un grand espace de manière efficace.
                             Il tente d’obtenir un ou plusieurs génomes permettant de fournir une solution à un problème donné. Un génome correspond à une série de données numériques ou textuelles.</p>
 
-                            <p>L’algorithme travaille sur une population de génomes (dans notre cas, une vingtaine de génomes). Le principe consiste à évaluer toute la population pour attribuer un score à chaque individu. Ensuite, la génération suivante est générée à l’aide de croisements et de mutations effectués sur les génomes ayant obtenu les meilleurs scores.</p>
+                            <p>L’algorithme travaille sur une population de génomes (dans notre cas, une vingtaine de génomes). Le principe consiste à évaluer toute la population pour attribuer un score à chaque individu (le score de fitness). Ce score est déterminé par la formule suivante:</p>
+
+                            <center><strong>Fitness = (nc * 100 + A * 100) * L * C</strong></center>
+
+                            <p>Où :</p>
+                            <ul>
+                                <li>nc est le nombre de chemin possible dans le graphe.</li>
+                                <li>A est le ratio de la surface du graphe sur la surface totale du canvas.</li>
+                                <li>L est le ratio de la moyenne des chemins sur la moyenne des distances entre chaques points du graphe.</li>
+                                <li>C est le ratio du nombre de noeud accessible sur le nombre de noeuds total.</li>
+                            </ul>
+
+                            <p>La génération suivante est générée à l’aide de croisements et de mutations effectués sur les génomes ayant obtenu les meilleurs scores.</p>
 
                             <p>Ce processus est itéré jusqu’à l’obtention d’un résultat satisfaisant. Dans notre cas, un génome correspond une liste de sommets qui composeront le graphe.</p>
-
-
-
 
                             <h1 id="recherche">Recheche du plus court chemin</h1>
 
