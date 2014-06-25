@@ -29,6 +29,17 @@
             <div id="speedValue">Vitesse: 100%</div>
             <div id="speedSlider" style="width: 200px; margin: 20px;"></div>
 
+
+            <a href="./examples/astar.html" class="btn btn-lg btn-info" role="button">
+                Voir la page du A*
+            </a>
+            <br><br>
+            <a href="./examples/AlgorithmeGenetique.html" class="btn btn-lg btn-info" role="button">
+                Voir la page de
+                <br>
+                l'algo. génétique
+            </a>
+
             <br><br>
 
             <h3>Options</h3>
@@ -80,6 +91,12 @@
                                 <ul>
                                     <li><a href="#gintro" class="h2">Introduction</a></li>
                                     <li><a href="#gprincipe" class="h2">Principe de l’algorithme génétique</a></li>
+                                </ul>
+
+                                <li><a href="#recherche" class="h1">Recheche du plus court chemin</a></li>
+                                <ul>
+                                    <li><a href="#astar" class="h2">Mise en place de l’algorithme de A* (A star)</a></li>
+                                    <li><a href="#astarprincipe" class="h2">Principe de fonctionnement</a></li>
                                 </ul>
                             </ul>
 
@@ -262,6 +279,36 @@
                             <p>L’algorithme travaille sur une population de génomes (dans notre cas, une vingtaine de génomes). Le principe consiste à évaluer toute la population pour attribuer un score à chaque individu. Ensuite, la génération suivante est générée à l’aide de croisements et de mutations effectués sur les génomes ayant obtenu les meilleurs scores.</p>
 
                             <p>Ce processus est itéré jusqu’à l’obtention d’un résultat satisfaisant. Dans notre cas, un génome correspond une liste de sommets qui composeront le graphe.</p>
+
+
+
+
+                            <h1 id="recherche">Recheche du plus court chemin</h1>
+
+                            <h2 id="astar">Mise en place de l’algorithme de A* (A star)</h2>
+
+                            <p>L’algorithme du A* est un algorithme de parcours de chemin permettant de déterminer le chemin le plus court entre deux points d’un graphe. Celui-ci est plus populaire que l’algorithme de Dijkstra, car plus rapide et moins gourmand en ressources.</p>
+
+                            <p>Cependant, l’algorithme se base sur une heuristique qui doit être valide et cohérente de façon à fournir de bons résultats (dans notre cas, nous avons utilisé la distance de Manhattan).</p>
+
+                            <p>Le principe consiste à calculer la fonction F = G + H, où:</p>
+                            <ul>
+                                <li>F correspond au score du noeud</li>
+                                <li>G au coût de déplacement depuis le noeud de départ</li>
+                                <li>H l’heuristique du noeud</li>
+                            </ul>
+
+                            <h2 id="astarprincipe">Principe de fonctionnement</h2>
+
+                            <p>L’algorithme fonctionne en trois phases:</p>
+                            <ul>
+                                <li>Il Détermine toutes les heuristiques de chaque noeud du graphe, et place le noeud de départ dans une liste dite “ouverte”.</li>
+                                
+                                <li>Depuis la liste “ouverte” l’algorithme récupère le noeud ayant le score le plus faible. La valeur F de chacun de ses voisins est calculée, puis ceux-ci sont placés dans la liste “ouverte”. Le noeud est déplacé depuis la liste “ouverte” vers une liste dite “fermée”. L’opération se répète tant qu’il y a un noeud présent dans la liste, ou que le noeud final est atteint sans qu’aucun des noeuds de cette liste n’aient un score plus petit que le noeud courant.</li>
+                                
+                                <li>Si le noeud final est atteint, on remonte ses parents, ce qui donne le chemin à emprunter. Dans le cas contraire, il n’existe pas de chemin possible entre les deux points du graphe.</li>
+                            </ul>
+                            
                         </section>
 
                     </div>
@@ -301,8 +348,6 @@
     <script type="text/javascript" src="./js/common/QSort.js"></script>
 
     <script type="text/javascript" src="./js/path_finding/AStar.js"></script>
-
-
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
