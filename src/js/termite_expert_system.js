@@ -8,7 +8,9 @@ function Termite() {
     this.perceptionRadius = 30;
 
     this.collideTypes = ["wood_heap", "wall"];
-    this.contactTypes = ["wood_heap", "termite"];
+    this.contactTypes = ["wood_heap", "termite", "wall"];
+
+    this.agentsMet = [];
 
     this.nextChange = 0;
     this.speed = 0;
@@ -22,6 +24,7 @@ function Termite() {
     this.lastWoodHeap = null;
     this.lastTermite = null;
     this.lastPickUpHeap = null;
+    this.lastHitWall = null;
 
     this.queen = null;
 }
@@ -31,7 +34,7 @@ Termite.prototype.initExpertSystem = function() {
     // Lorsqu’un termite “rōnin” rencontre un tas de bois sans reine, il change ce tas de bois en termitière
     // en y plaçant une nouvelle reine et se change en termite “ouvrier”.
     this.expertSystem.addRule("drop_queen", ["hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
-    //this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
+    // this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "dontHasQueen", "wood_heapDontHasQueen", "wood_heapDontHasPheromone"]);
 
     // Lorsqu’un termite “rōnin” rencontre une termitière, il jure fidélité à la reine qui la dirige et devient un termite “ouvrier”
     this.expertSystem.addRule("ally_queen", ["hit_heap", "dontHasQueen", "wood_heapHasQueen"]);
@@ -47,21 +50,21 @@ Termite.prototype.initExpertSystem = function() {
         // (pour que d’autre individu ne rechange plus le tas de bois en termitière). Afin que les ouvriers de la termitière “déchue”
         // ne redeviennent pas des “rōnins” le termite laisse le phéromone de sa propre reine sur le tas de bois. Pour finir,
         // le termite retourne auprès de sa reine pour l’informer de son régicide (ainsi que la position de la termitière “déchue”).
-        this.expertSystem.addRule("kill_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
-        this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
-        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
-        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenMorePowerfulThanOtherWoodHeapQueen", "uncharged"]);
+        this.expertSystem.addRule("kill_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("drop_pheromone", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenMorePowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenMorePowerfulThanOtherWoodHeapQueen", "uncharged"]);
 
 
         // 2 - Sa reine est moins puissante (de 20 points) il va alors juré fidélité à sa nouvelle reine et l’informer
         // de la position de son ancienne reine.
-        this.expertSystem.addRule("ally_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenLessPowerfulThanOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("ally_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenLessPowerfulThanOtherWoodHeapQueen"]);
         this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "queenLessPowerfulThanOtherWoodHeapQueen"]);
 
         // 3 - Sa reine est aussi puissante (différence inférieure à 20 points), le termite va simplement prendre un
         // bout de bois de la termitière et retourner auprès de sa reine pour l’informer de la position de la termitière rencontrée.
-        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen", "uncharged"]);
-        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "queenAsPowerfulAsOtherWoodHeapQueen"]);
+        this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenAsPowerfulAsOtherWoodHeapQueen", "uncharged"]);
+        this.expertSystem.addRule("back_to_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsNotQueen", "queenAsPowerfulAsOtherWoodHeapQueen"]);
 
     // Si un termite rencontre un tas de bois sans reine et sans phéromone, trois options s’offrent à lui :
 
@@ -98,9 +101,16 @@ Termite.prototype.initExpertSystem = function() {
     
     // Si on retombe sur notre termitière, on donne le bout de bois
     this.expertSystem.addRule("drop_wood", ["charged", "hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
+    this.expertSystem.addRule("inform_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
+
+    // Un termite “ouvrier” sans travail va demander un travail à sa reine.
+    this.expertSystem.addRule("get_order_from_queen", ["hit_heap", "hasQueen", "wood_heapHasQueen", "wood_heapQueenIsQueen"]);
+
+    // Si on rencontre un tas de bois avec notre pheromone, on recolte si possible
+    this.expertSystem.addRule("take_wood", ["hit_heap", "hasQueen", "wood_heapHasPheromone", "wood_heapPheromoneIsQueens", "uncharged"]);
 
     // Si le "timer" du termite est terminé, il change de direction (déplacement aléatoire)
-    this.expertSystem.addRule("change_direction", ["timer_out"]);
+    this.expertSystem.addRule("change_direction", [/*"uncharged", */"timer_out"]);
 };
 
 Termite.prototype.update = function(dt) {
@@ -110,12 +120,13 @@ Termite.prototype.update = function(dt) {
     var conclusions = this.analyze();
     this.act(conclusions);
 
-    this.hit_wall = false;
     this.moveBy(this.destination, this.speed * dt / 1000);
     this.nextChange -= dt;
     this.last_hit_type = "";
     this.lastWoodHeap = null;
+    this.lastHitWall = null;
     this.lastTermite = null;
+    this.hit_wall = false;
 };
 
 Termite.prototype.perceive = function() {
@@ -140,7 +151,9 @@ Termite.prototype.perceive = function() {
     this.expertSystem.setFactValid("wood_heapBiggerThanQueen", this.hasQueen() && this.lastWoodHeap && (this.lastWoodHeap.woodCount - 20) > this.getQueen().getPower());
     this.expertSystem.setFactValid("wood_heapAsBigAsQueen", this.hasQueen() && this.lastWoodHeap && Math.abs(this.lastWoodHeap.woodCount - this.getQueen().getPower()) < 20);
     this.expertSystem.setFactValid("wood_heapPheromoneNotQueens", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasPheromone() && this.lastWoodHeap.getPheromone().getQueen().id !== this.getQueen().id);
+    this.expertSystem.setFactValid("wood_heapPheromoneIsQueens", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasPheromone() && this.lastWoodHeap.getPheromone().getQueen().id === this.getQueen().id);
     this.expertSystem.setFactValid("wood_heapQueenIsQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && this.lastWoodHeap.getQueen().id === this.getQueen().id);
+    this.expertSystem.setFactValid("wood_heapQueenIsNotQueen", this.hasQueen() && this.lastWoodHeap && this.lastWoodHeap.hasQueen() && this.lastWoodHeap.getQueen().id !== this.getQueen().id);
 
     this.expertSystem.setFactValid("lastTermiteHasQueen", this.lastTermite && this.lastTermite.hasQueen());
     this.expertSystem.setFactValid("lastTermiteDontHasQueen", this.lastTermite && !this.lastTermite.hasQueen());
@@ -201,26 +214,38 @@ Termite.prototype.act = function(conclusions) {
         else if (conclusions[i] == "ally_queen") {
             this.allyQueen();
         }
+
+        else if (conclusions[i] == "inform_queen") {
+            this.informQueen();
+        }
+
+        else if (conclusions[i] == "get_order_from_queen") {
+            this.getOrderFromQueen();
+        }
     }
+};
+
+Termite.prototype.receiveOrderFromQueen = function(path) {
+    debug('receiveOrderFromQueen')
+};
+
+Termite.prototype.getOrderFromQueen = function() {
+    this.queen.newTaskRequest(this);
+
+    debug('getOrderFromQueen')
 };
 
 Termite.prototype.takeARandomDirection = function () {
 
-    if(this.caryingWood) {
-        return;
-    }
-
-    console.clear();
-
     this.destination = {
-        x : this.last_hit_type == "wall" ? -1 * this.destination.x + 10 : Math.random() * 200 - 100,
-        y : this.last_hit_type == "wall" ? -1 * this.destination.y - 10 : Math.random() * 200 - 100
+        x : Math.random() * 200 - 100,
+        y : Math.random() * 200 - 100
     };
 
     this.speed = Math.random() * 150 + 150;
     this.nextChange = Math.random() * 800 + 200;
 
-    console.log('randomDirection', this.destination)
+    debug('randomDirection ' + this.destination)
 };
 
 Termite.prototype.allyQueen = function() {
@@ -238,46 +263,58 @@ Termite.prototype.allyQueen = function() {
     if(oldQueen !== null) {
         this.queen.informNewAgent(oldQueen);
     }
-    console.log("Ally Queen");
+    debug("Ally Queen");
 };
 
 Termite.prototype.propagateQueen = function() {
     this.lastTermite.setQueen(this.getQueen());
-    console.log("Propagate Queen");
+    debug("Propagate Queen");
 };
 
 Termite.prototype.addWood = function() {
-    this.lastWoodHeap.addWood();
-    this.caryingWood = false;
-    this.lastPickUpHeap = this.lastWoodHeap;
-    console.log("Add wood");
+    if(this.caryingWood) {
+        this.lastWoodHeap.addWood();
+        this.caryingWood = false;
+        this.lastPickUpHeap = this.lastWoodHeap;
+        debug("Add wood");
+        return;
+    }
+
+    debug('Cannot Add Wood Because Not Carying')
 };
 
 Termite.prototype.takeWood = function() {
-    this.lastWoodHeap.takeWood();
-    this.caryingWood = true;
-    console.log("Take wood");
+    if(!this.caryingWood) {
+        this.lastWoodHeap.takeWood();
+        this.caryingWood = true;
+        debug("Take wood");
+        return;
+    }
+
+    debug('Cannot Take Wood Because Carying');
 };
 
 Termite.prototype.backToQueen = function() {
-    this.destination = {
-        x : this.queen.x,
-        y : this.queen.y
-    };
+    if(this.hasQueen()) {
+        this.takeARandomDirection();
 
-    console.log('Back to Queen', this.destination)
+        debug('Back to Queen')
+        return;
+    }
+    
+    debug('Cannot Go Back to Queen Because No Queen')
 };
 
 Termite.prototype.killQueen = function() {
     this.lastWoodHeap.killQueen();
-    console.log("Kill Queen");
+    debug("Kill Queen");
 };
 
 Termite.prototype.dropPheromone = function() {
      var pheromone = new Pheromone(this.getQueen());
     world.addAgent(pheromone);
     this.lastWoodHeap.setPheromone(pheromone);
-    console.log("Drop Pheromone");
+    debug("Drop Pheromone");
 };
 
 Termite.prototype.dropQueen = function() {
@@ -302,7 +339,22 @@ Termite.prototype.dropQueen = function() {
 
     this.lastWoodHeap.setQueen(this.queen);
     world.addAgent(this.queen);
-    console.log("Drop Queen", this.queen.x, this.queen.y, 'from', this.x, this.y);
+    debug("Drop Queen");
+};
+
+Termite.prototype.informQueen = function() {
+    if(this.hasQueen()) {
+
+        for(var i in this.agentsMet) {
+            // console.log('informing queen', this.agentsMet[i].typeId)
+            this.queen.informNewAgent(this.agentsMet[i]);
+        }
+
+        // this.agentsMet = [];
+
+    }
+
+    debug("Inform Queen");
 };
 
 Termite.prototype.draw = function(context) {
@@ -337,20 +389,34 @@ Termite.prototype.setQueen = function(queen) {
 
 Termite.prototype.processCollision = function(collidedAgent) {
 
-    if (collidedAgent === null) {
-        this.last_hit_type = "wall";
-        return;
-    }
+    if(collidedAgent) {
 
-    this.last_hit_type = collidedAgent.typeId;
+        this.agentsMet.push(collidedAgent);
+        // console.log(this.agentsMet.length)
 
-    if (this.last_hit_type === "wood_heap") {
-        this.lastWoodHeap = collidedAgent;
-        console.log("hit heap");
-    }
+        if (collidedAgent === null) {
+            this.last_hit_type = "wall";
+            return;
+        }
 
-    else if(this.last_hit_type === "termite") {
-        this.lastTermite = collidedAgent;
+        this.last_hit_type = collidedAgent.typeId;
+
+        if(this.last_hit_type === "wall") {
+            this.lastHitWall = collidedAgent;
+            debug("hit wall");
+            return;
+        }
+
+        if (this.last_hit_type === "wood_heap") {
+            this.lastWoodHeap = collidedAgent;
+            debug("hit heap");
+            return;
+        }
+
+        else if(this.last_hit_type === "termite") {
+            this.lastTermite = collidedAgent;
+        }
+
     }
 };
 

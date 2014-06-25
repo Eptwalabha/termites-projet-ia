@@ -27,7 +27,7 @@ function init() {
 
     world = new World(canvasElement.width, canvasElement.height);
 
-    var woodVolume = 500;
+    var woodVolume = 1000;
 
     while (woodVolume > 0) {
 
@@ -42,14 +42,14 @@ function init() {
         woodHeap.moveTo(canvasElement.width * Math.random(), canvasElement.height * Math.random());
     }
 
-    for(var i = 0; i < 0; i++) {
+    for(var i = 0; i < 6; i++) {
         var wall = new Wall();
         world.addAgent(wall);
         wall.moveTo(    canvasElement.width * Math.random(),
                         canvasElement.height * Math.random());
     }
 
-    for(i = 0; i < 1; i ++) {
+    for(i = 0; i < 30; i ++) {
         var termite = new Termite();
         world.addAgent(termite);
         termite.moveTo( canvasElement.width * Math.random(), 
@@ -83,6 +83,12 @@ $(document).ready(function() {
         }
     );
 
+    $('input#paths').change(
+        function () {
+            GLOBAL_DRAW_PATHS = !GLOBAL_DRAW_PATHS;
+        }
+    );
+
     $('#speedSlider').slider({
         value: speed,
         step: 0.01,
@@ -94,26 +100,38 @@ $(document).ready(function() {
         }
     });
 
-    $('button.btn-primary').click(
+    $('button.btn-primary')
+    .css('display', 'none')
+    .click(
         function () {
             speed = oldSpeed;
             $('#speedValue').html("Vitesse:" + Math.floor(speed * 100) + "%");
             $('#speedSlider').slider('value', speed);
+            $(this).css('display', 'none');
+            $('button.btn-warning').css('display', 'initial');
         }
     );
 
-    $('button.btn-danger').click(
+    $('button.btn-warning').click(
         function () {
             oldSpeed = speed;
             speed = 0;
             $('#speedValue').html("Vitesse:" + Math.floor(speed * 100) + "%");
             $('#speedSlider').slider('value', speed);
+            $(this).css('display', 'none');
+            $('button.btn-primary').css('display', 'initial');
         }
     );
 
     $('button.btn-success').click(
         function () {
             location.reload();
+        }
+    );
+
+    $('button.btn-danger').click(
+        function () {
+            console.clear();
         }
     );
 });
